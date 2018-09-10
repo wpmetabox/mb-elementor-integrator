@@ -1,15 +1,15 @@
 <?php
 /**
- * Plugin Name: Meta Box - Elementor Intergrator
- * Plugin URI: https://metabox.io/plugins/mb-elementor-intergrator/
+ * Plugin Name: Meta Box - Elementor Integrator
+ * Plugin URI: https://metabox.io/plugins/mb-elementor-integrator/
  * Description: Integrates Meta Box and Elementor Page Builder.
- * Version: 1.2
+ * Version: 1.0.0
  * Author: MetaBox.io
  * Author URI: https://metabox.io
  * License: GPL2+
  *
  * @package Meta Box
- * @subpackage MB Elementor Integration
+ * @subpackage MB Elementor Integrator
  */
 
 // Prevent loading this file directly.

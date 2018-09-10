@@ -4,6 +4,10 @@ Easily select and show custom fields created by the [Meta Box](https://metabox.i
 
 The plugin works for all field types. And you don't have to remember the field name or field ID to type. You just need to select it from the dropdown list.
 
+**Video demo**:
+
+https://www.youtube.com/watch?v=NzR9lii2S30&rel=0
+
 ### Plugin Links
 
 - [Homepage](https://metabox.io/plugins/mb-elementor-integrator/)
