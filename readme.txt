@@ -1,4 +1,4 @@
-=== MB - Elementor Integrator ===
+=== Meta Box - Elementor Integrator ===
 Contributors: metabox, rilwis
 Donate link: https://metabox.io/pricing/
 Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, custom field, elementor, dynamic tags

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: MB - Elementor Intergrator
+ * Plugin Name: Meta Box - Elementor Intergrator
  * Plugin URI: https://metabox.io/plugins/mb-elementor-intergrator/
  * Description: Integrates Meta Box and Elementor Page Builder.
  * Version: 1.2
