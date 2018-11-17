@@ -18,24 +18,24 @@ class MB_Elementor_Integrator_Video extends Data_Tag {
 
 	public function get_value( array $options = [] ) {
 		$field_id = $this->get_settings( 'key' );
-		$url_video = rwmb_meta( $field_id, get_the_ID() );
-		if ( ! $field_id || ! $url_video ) {
+		$videos   = rwmb_meta( $field_id, get_the_ID() );
+		if ( ! $field_id || ! $videos ) {
 			return;
 		}
-		$link_url = [];
-		if ( is_array( $url_video ) ) {
-			foreach ( $url_video as $link ) {
-				if ( ! empty( $link['src'] ) ) {
-					$link_url['url'] = $link['src'];
-				}
-				if ( ! empty( $link['url'] ) ) {
-					$link_url['url'] = $link['url'];
-				}
-			}
-		} else {
-			$link_url = $url_video;
+
+		if ( ! is_array( $videos ) ) {
+			return $videos;
 		}
-		return $link_url;
+		$value = [];
+		foreach ( $videos as $link ) {
+			if ( ! empty( $link['src'] ) ) {
+				$value['url'] = $link['src'];
+			}
+			if ( ! empty( $link['url'] ) ) {
+				$value['url'] = $link['url'];
+			}
+		}
+		return $value;
 	}
 
 	protected function get_supported_fields() {

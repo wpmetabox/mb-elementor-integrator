@@ -23,19 +23,18 @@ class MB_Elementor_Integrator_Image extends Data_Tag {
 			return;
 		}
 
-		$value = [];
 
-		if ( ! isset( $images['ID'] ) ) {
-			foreach ( $images as $image ) {
-				$value[] = [
-					'id' => $image['ID'],
-				];
-			}
-			return $value;
+		if ( isset( $images['ID'] ) ) {
+			$images['id'] = $images['ID'];
+			return $images;
 		}
-
-		$images['id'] = $images['ID'];
-		return $images;
+		$value = [];
+		foreach ( $images as $image ) {
+			$value[] = [
+				'id' => $image['ID'],
+			];
+		}
+		return $value;
 	}
 
 	protected function get_supported_fields() {
