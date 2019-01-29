@@ -17,8 +17,9 @@ class MB_Elementor_Integrator_Video extends Data_Tag {
 	}
 
 	public function get_value( array $options = [] ) {
-		$field_id = $this->get_settings( 'key' );
-		$videos   = rwmb_meta( $field_id, get_the_ID() );
+		$field_id  = $this->get_settings( 'key' );
+		$url_video = self::handle_get_value( $field_id, get_the_ID() );
+
 		if ( ! $field_id || ! $videos ) {
 			return;
 		}
