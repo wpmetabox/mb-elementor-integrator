@@ -143,7 +143,14 @@ trait MB_Elementor_Integrator_Base {
 	}
 
 	protected function handle_get_value( $field_id, $id ) {
+
 		if ( ! $this->get_settings( 'option_name' ) ) {
+			$term_id = get_queried_object_id();
+			if ( $term_id ) {
+				$value = rwmb_meta( $field_id, array( 'object_type' => 'term' ), $term_id );
+				echo $value;
+				return;
+			}
 			return rwmb_meta( $field_id, $id );
 		}
 
