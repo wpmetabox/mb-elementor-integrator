@@ -17,8 +17,8 @@ class MB_Elementor_Integrator_Text extends Tag {
 
 	public function render() {
 		$field_id    = $this->get_settings( 'key' );
-		$field_value = self::handle_get_value( $field_id, get_the_ID() );
+		$field_value = self::handle_get_value( $field_id );
 
-		rwmb_the_value( $field_id );
+		echo $field_value;
 	}
 }
