@@ -17,17 +17,18 @@ class MB_Elementor_Integrator_Video extends Data_Tag {
 	}
 
 	public function get_value( array $options = [] ) {
-		$field_id = $this->get_settings( 'key' );
-		$videos   = rwmb_meta( $field_id, get_the_ID() );
-		if ( ! $field_id || ! $videos ) {
+		$url = self::handle_get_value();
+
+		if ( empty( $url ) ) {
 			return;
 		}
 
-		if ( ! is_array( $videos ) ) {
-			return $videos;
+		if ( ! is_array( $url ) ) {
+			return $url;
 		}
+
 		$value = [];
-		foreach ( $videos as $link ) {
+		foreach ( $url as $link ) {
 			if ( ! empty( $link['src'] ) ) {
 				$value['url'] = $link['src'];
 			}
@@ -35,6 +36,7 @@ class MB_Elementor_Integrator_Video extends Data_Tag {
 				$value['url'] = $link['url'];
 			}
 		}
+
 		return $value;
 	}
 
