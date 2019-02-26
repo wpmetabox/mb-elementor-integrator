@@ -17,10 +17,9 @@ class MB_Elementor_Integrator_Image extends Data_Tag {
 	}
 
 	public function get_value( array $options = [] ) {
-		$field_id = $this->get_settings( 'key' );
-		$images   = self::handle_get_value( $field_id );
+		$images = self::handle_get_value();
 
-		if ( ! $field_id || ! $images ) {
+		if ( empty( $images ) ) {
 			return;
 		}
 

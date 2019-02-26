@@ -142,31 +142,24 @@ trait MB_Elementor_Integrator_Base {
 		return $this->object_type;
 	}
 
-	protected function handle_get_value( $field_id ) {
-		$object = $this->handle_get_object();
-
-		if ( $this->get_settings( 'option_name' ) ) {
-			return rwmb_meta( $field_id, array( 'object_type' => $object['object_type'] ), $this->get_settings( 'option_name' ) );
-		}
-
-		$value =  rwmb_meta( $field_id, array( 'object_type' => $object['object_type'] ), $object['id'] );
-		return $value;
+	protected function handle_get_value() {
+		$object = $this->get_object();
+		return rwmb_meta( $this->get_settings( 'key' ), array( 'object_type' => $object['object_type'] ), $object['id'] );
 	}
 
-	protected function handle_get_object() {
-		$object       = array(
+	protected function get_object() {
+		$object = array(
 			'object_type' => 'post',
-			'id'          => get_the_ID(),
+			'id'          => get_queried_object_id(),
 		);
 
-		$term = ! empty( get_queried_object()->term_id ) ? get_queried_object()->term_id : '';
-		if ( $term ) {
+		if ( ! empty( get_queried_object()->term_id ) ) {
 			$object['object_type'] = 'term';
-			$object['id'] = $term;
 		}
 
 		if ( $this->get_settings( 'option_name' ) ) {
 			$object['object_type'] = 'setting';
+			$object['id']          = $this->get_settings( 'option_name' );
 		}
 
 		return $object;
