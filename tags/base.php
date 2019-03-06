@@ -105,23 +105,16 @@ trait MB_Elementor_Integrator_Base {
 
 		if ( function_exists( 'mb_cpt_load' ) ) {
 
-			$get_post_type = $this->get_post_type_singular();
-			if ( $get_post_type ) {
-				$get_post_type = wp_list_pluck( $get_post_type, 'post_type' );
-			} else {
-				$get_post_type[] = 'post';
-			}
-
+			$post_types = $this->get_post_type_singular();
+			$post_types = $post_types ? wp_list_pluck( $post_types, 'post_type' ) : ['post'];
 
 			foreach ( $fields as $post_type => $value ) {
-				if ( in_array( $post_type, $get_post_type ) ) {
-					continue;
+				if ( ! in_array( $post_type, $post_types ) ) {
+					unset( $fields[ $post_type ] );
 				}
-				unset( $fields[ $post_type ] );
 			}
-
-
 		}
+
 		return $fields;
 	}
 
