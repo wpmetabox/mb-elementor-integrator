@@ -1,5 +1,6 @@
 <?php
 use Elementor\Controls_Manager;
+use ElementorPro\Modules\ThemeBuilder\Module;
 
 trait MB_Elementor_Integrator_Base {
 	/**
@@ -101,6 +102,26 @@ trait MB_Elementor_Integrator_Base {
 				return true;
 			} );
 		} );
+
+		if ( function_exists( 'mb_cpt_load' ) ) {
+
+			$get_post_type = $this->get_post_type_singular();
+			if ( $get_post_type ) {
+				$get_post_type = wp_list_pluck( $get_post_type, 'post_type' );
+			} else {
+				$get_post_type[] = 'post';
+			}
+
+
+			foreach ( $fields as $post_type => $value ) {
+				if ( in_array( $post_type, $get_post_type ) ) {
+					continue;
+				}
+				unset( $fields[ $post_type ] );
+			}
+
+
+		}
 		return $fields;
 	}
 
@@ -164,5 +185,37 @@ trait MB_Elementor_Integrator_Base {
 		}
 
 		return $object;
+	}
+
+	protected function get_post_type_singular() {
+		$type       = get_post_meta( $_GET['post'], '_elementor_template_type', true );
+		$conditions = [];
+
+		if ( $type != 'single' ) {
+			return $conditions;
+		}
+
+		$theme_builder_module = Module::instance();
+		$document             = $theme_builder_module->get_document( get_the_ID() );
+
+		if ( ! $document ) {
+			return $conditions;
+		}
+
+		$document_conditions = $document->get_main_meta( '_elementor_conditions' );
+
+		if ( is_array( $document_conditions ) ) {
+			foreach ( $document_conditions as $condition ) {
+				$conditions[] = $this->parse_condition( $condition );
+			}
+		}
+
+		return $conditions;
+	}
+
+	protected function parse_condition( $condition ) {
+		list ( $form, $type, $post_type, $sub_id ) = array_pad( explode( '/', $condition ), 4, '' );
+
+		return compact( 'form', 'type', 'post_type', 'sub_id' );
 	}
 }
