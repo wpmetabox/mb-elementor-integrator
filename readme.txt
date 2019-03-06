@@ -4,7 +4,7 @@ Donate link: https://metabox.io/pricing/
 Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, custom field, elementor, dynamic tags
 Requires at least: 4.9
 Tested up to: 5.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with Elementor page builder via dynamic tags.
@@ -51,6 +51,16 @@ Install **Meta Box - Elementor Integrator** extension
 
 == Changelog ==
 
-[See full changelog here](https://github.com/wpmetabox/mb-elementor-integrator/CHANGELOG.md).
+= 1.1.1 - 2019-03-06 =
+- Fixed undefined function to detect MB Settings Page that causes fatal error.
+
+= 1.1.0 - 2019-02-26 =
+- Added support for custom fields of terms and settings pages.
+
+= 1.0.1 =
+- Fixed output for cloneable field.
+
+= 1.0.0 =
+- First release.
 
 == Upgrade Notice ==

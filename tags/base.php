@@ -40,7 +40,8 @@ trait MB_Elementor_Integrator_Base {
 			'options' => $this->get_fields(),
 		] );
 
-		if ( ! mbb_is_extension_active( 'mb-settings-page' ) ) {
+		// For MB Settings Page extension.
+		if ( ! function_exists( 'mb_settings_page_load' ) ) {
 			return;
 		}
 
@@ -104,7 +105,7 @@ trait MB_Elementor_Integrator_Base {
 	}
 
 	protected function get_all_fields_setting() {
-		if ( ! mbb_is_extension_active( 'mb-settings-page' ) ) {
+		if ( ! function_exists( 'mb_settings_page_load' ) ) {
 			return;
 		}
 
