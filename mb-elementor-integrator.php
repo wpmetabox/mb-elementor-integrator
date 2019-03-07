@@ -1,14 +1,14 @@
 <?php
 /**
  * Plugin Name: Meta Box - Elementor Integrator
- * Plugin URI: https://metabox.io/plugins/mb-elementor-integrator/
+ * Plugin URI:  https://metabox.io/plugins/mb-elementor-integrator/
  * Description: Integrates Meta Box and Elementor Page Builder.
- * Version: 1.1.1
- * Author: MetaBox.io
- * Author URI: https://metabox.io
- * License: GPL2+
+ * Version:     2.0.0
+ * Author:      MetaBox.io
+ * Author URI:  https://metabox.io
+ * License:     GPL2+
  *
- * @package Meta Box
+ * @package    Meta Box
  * @subpackage MB Elementor Integrator
  */
 
@@ -20,7 +20,7 @@ add_action( 'elementor/dynamic_tags/register_tags', 'mb_elementor_integrator_reg
 /**
  * Register dynamic tags for Elementor.
  *
- * @param  object $tags Elementor dynamic tags instance.
+ * @param object $dynamic_tags Elementor dynamic tags instance.
  */
 function mb_elementor_integrator_register_tags( $dynamic_tags ) {
 	if ( !defined( 'RWMB_VER' ) ) {
