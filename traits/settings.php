@@ -22,7 +22,7 @@ trait MBEI_Settings {
 		return $groups;
 	}
 
-	protected function handle_get_value() {
+	private function handle_get_value() {
 		$key = $this->get_settings( 'key' );
 		list( $option_name, $field_id ) = explode( ':', $key );
 		return rwmb_meta( $field_id, [ 'object_type' => 'setting' ], $option_name );

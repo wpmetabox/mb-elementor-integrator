@@ -5,7 +5,7 @@
 
 use Elementor\Controls_Manager;
 
-trait MBEI_Object {
+trait MBEI_Base {
 	public function get_title() {
 		return __( 'Meta Box Field', 'mb-elementor-integrator' );
 	}

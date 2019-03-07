@@ -27,17 +27,16 @@ function mb_elementor_integrator_register_tags( $dynamic_tags ) {
 		return;
 	}
 
-	require 'traits/object.php';
-	require 'traits/post.php';
+	require 'traits/base.php';
 
 	require 'traits/fields/text.php';
 	require 'traits/fields/image.php';
 	require 'traits/fields/video.php';
 
+	require 'traits/post.php';
 	require 'tags/post/text.php';
 	require 'tags/post/image.php';
 	require 'tags/post/video.php';
-
 	$dynamic_tags->register_tag( 'MBEI_Tag_Text' );
 	$dynamic_tags->register_tag( 'MBEI_Tag_Image' );
 	$dynamic_tags->register_tag( 'MBEI_Tag_Video' );

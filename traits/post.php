@@ -17,7 +17,7 @@ trait MBEI_Post {
 			}
 			$options = [];
 			foreach ( $list as $field ) {
-				$options[ $field['id'] ] = $field['name'] ?: $field['id'];
+				$options[ "{$post_type}:{$field['id']}" ] = $field['name'] ?: $field['id'];
 			}
 			$groups[] = [
 				'label'   => $post_type_object->labels->singular_name,
@@ -29,6 +29,11 @@ trait MBEI_Post {
 	}
 
 	private function handle_get_value() {
-		return rwmb_meta( $this->get_settings( 'key' ) );
+		$key = $this->get_settings( 'key' );
+		if ( false === strpos( $key, ':' ) ) {
+			return rwmb_meta( $key );
+		}
+		list( $post_type, $field_id ) = explode( ':', $key );
+		return rwmb_meta( $field_id );
 	}
 }
