@@ -1,14 +1,7 @@
 <?php
-use Elementor\Core\DynamicTags\Data_Tag;
 use Elementor\Modules\DynamicTags\Module;
 
-class MB_Elementor_Integrator_Video extends Data_Tag {
-	use MB_Elementor_Integrator_Base;
-
-	public function get_name() {
-		return 'meta-box-url';
-	}
-
+trait MBEI_Video {
 	public function get_categories() {
 		return [
 			Module::URL_CATEGORY,
@@ -40,7 +33,7 @@ class MB_Elementor_Integrator_Video extends Data_Tag {
 		return $value;
 	}
 
-	protected function get_supported_fields() {
+	private function get_supported_fields() {
 		return [
 			'video',
 			'text',
@@ -49,5 +42,4 @@ class MB_Elementor_Integrator_Video extends Data_Tag {
 			'file',
 		];
 	}
-
 }

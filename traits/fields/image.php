@@ -1,14 +1,7 @@
 <?php
-use Elementor\Core\DynamicTags\Data_Tag;
 use Elementor\Modules\DynamicTags\Module;
 
-class MB_Elementor_Integrator_Image extends Data_Tag {
-	use MB_Elementor_Integrator_Base;
-
-	public function get_name() {
-		return 'meta-box-image';
-	}
-
+trait MBEI_Image {
 	public function get_categories() {
 		return [
 			Module::IMAGE_CATEGORY,
@@ -38,7 +31,7 @@ class MB_Elementor_Integrator_Image extends Data_Tag {
 		return $value;
 	}
 
-	protected function get_supported_fields() {
+	private function get_supported_fields() {
 		return [
 			'image',
 			'single_image',
