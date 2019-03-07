@@ -38,7 +38,7 @@ class MB_Elementor_Integrator_Image extends Data_Tag {
 		return $value;
 	}
 
-	protected function get_supported_fields() {
+	private function get_supported_fields() {
 		return [
 			'image',
 			'single_image',

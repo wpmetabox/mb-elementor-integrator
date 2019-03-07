@@ -88,34 +88,21 @@ trait MB_Elementor_Integrator_Base {
 		}
 
 		$fields = rwmb_get_registry( 'field' )->get_by_object_type( $this->object_field );
+		$fields = array_map( [ $this, 'remove_unsupported_fields' ], $fields );
 
-		// Remove fields that don't have value.
-		array_walk( $fields, function ( &$list ) {
-			$list = array_filter( $list, function( $field ) {
-				if ( in_array( $field['type'], array( 'heading', 'divider', 'custom_html', 'button' ), true ) ) {
-					return false;
-				}
-				$supported_fields = $this->get_supported_fields();
-				if ( $supported_fields && ! in_array( $field['type'], $supported_fields ) ) {
-					return false;
-				}
-				return true;
-			} );
-		} );
+		return array_diff_key( $fields, array_flip( ['mb-post-type', 'mb-taxonomy'] ) );
 
-		if ( function_exists( 'mb_cpt_load' ) ) {
+		// Get supported post types for the current layout.
+		// $post_types = $this->get_template_post_types();
+		// $post_types = $post_types ?: ['post'];
 
-			$post_types = $this->get_post_type_singular();
-			$post_types = $post_types ? wp_list_pluck( $post_types, 'post_type' ) : ['post'];
+		// foreach ( $fields as $post_type => $list ) {
+		// 	if ( ! in_array( $post_type, $post_types ) ) {
+		// 		unset( $fields[ $post_type ] );
+		// 	}
+		// }
 
-			foreach ( $fields as $post_type => $value ) {
-				if ( ! in_array( $post_type, $post_types ) ) {
-					unset( $fields[ $post_type ] );
-				}
-			}
-		}
-
-		return $fields;
+		// return $fields;
 	}
 
 	protected function get_all_fields_setting() {
@@ -124,23 +111,23 @@ trait MB_Elementor_Integrator_Base {
 		}
 
 		$fields = rwmb_get_registry( 'field' )->get_by_object_type( 'setting' );
-		// Remove fields that don't have value.
-		array_walk( $fields, function ( &$list ) {
-			$list = array_filter( $list, function( $field ) {
-				if ( in_array( $field['type'], array( 'heading', 'divider', 'custom_html', 'button' ), true ) ) {
-					return false;
-				}
-				$supported_fields = $this->get_supported_fields();
-				if ( $supported_fields && ! in_array( $field['type'], $supported_fields ) ) {
-					return false;
-				}
-				return true;
-			} );
-		} );
-		return $fields;
+
+		return array_map( [ $this, 'remove_unsupported_fields' ], $fields );
 	}
 
-	protected function get_supported_fields() {
+	private function remove_unsupported_fields( $fields ) {
+		return array_filter( $fields, [ $this, 'is_supported' ] );
+	}
+
+	private function is_supported( $field ) {
+		if ( in_array( $field['type'], [ 'heading', 'divider', 'custom_html', 'button' ], true ) ) {
+			return false;
+		}
+		$supported_fields = $this->get_supported_fields();
+		return empty( $supported_fields ) || in_array( $field['type'], $supported_fields );
+	}
+
+	private function get_supported_fields() {
 		return [];
 	}
 
@@ -180,35 +167,40 @@ trait MB_Elementor_Integrator_Base {
 		return $object;
 	}
 
-	protected function get_post_type_singular() {
-		$type       = get_post_meta( $_GET['post'], '_elementor_template_type', true );
-		$conditions = [];
-
-		if ( $type != 'single' ) {
-			return $conditions;
+	/**
+	 * Get post types that the current template supports.
+	 * Used for templates: singular pages, post type archive, taxonomy page.
+	 *
+	 * @return array
+	 */
+	private function get_template_post_types() {
+		$template_type = get_post_meta( get_the_ID(), '_elementor_template_type', true );
+		if ( $template_type != 'single' ) {
+			return [];
 		}
 
 		$theme_builder_module = Module::instance();
 		$document             = $theme_builder_module->get_document( get_the_ID() );
-
 		if ( ! $document ) {
-			return $conditions;
+			return [];
 		}
 
-		$document_conditions = $document->get_main_meta( '_elementor_conditions' );
-
-		if ( is_array( $document_conditions ) ) {
-			foreach ( $document_conditions as $condition ) {
-				$conditions[] = $this->parse_condition( $condition );
-			}
+		$conditions = $document->get_main_meta( '_elementor_conditions' );
+		if ( ! is_array( $conditions ) ) {
+			return [];
 		}
 
-		return $conditions;
+		$post_types = [];
+		foreach ( $conditions as $condition ) {
+			$post_types[] = $this->get_post_type_from_condition( $condition );
+		}
+
+		return $post_types;
 	}
 
-	protected function parse_condition( $condition ) {
+	private function get_post_type_from_condition( $condition ) {
 		list ( $form, $type, $post_type, $sub_id ) = array_pad( explode( '/', $condition ), 4, '' );
 
-		return compact( 'form', 'type', 'post_type', 'sub_id' );
+		return $post_type;
 	}
 }

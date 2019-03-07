@@ -40,7 +40,7 @@ class MB_Elementor_Integrator_Video extends Data_Tag {
 		return $value;
 	}
 
-	protected function get_supported_fields() {
+	private function get_supported_fields() {
 		return [
 			'video',
 			'text',
