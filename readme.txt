@@ -3,8 +3,8 @@ Contributors: metabox, rilwis
 Donate link: https://metabox.io/pricing/
 Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, custom field, elementor, dynamic tags
 Requires at least: 4.9
-Tested up to: 5.1
-Stable tag: 2.0.0
+Tested up to: 5.1.1
+Stable tag: 2.0.1
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with Elementor page builder via dynamic tags.
@@ -50,6 +50,9 @@ Install **Meta Box - Elementor Integrator** extension
 2. Connect to a Meta Box Field
 
 == Changelog ==
+
+= 2.0.1 =
+- Fixed output of `taxonomy` field.
 
 = 2.0.0 =
 - Rewrote the plugin to better showing field list in post, archive and site groups.
