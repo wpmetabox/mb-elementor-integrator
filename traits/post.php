@@ -36,4 +36,13 @@ trait MBEI_Post {
 		list( $post_type, $field_id ) = explode( ':', $key );
 		return rwmb_meta( $field_id );
 	}
+
+	private function the_value() {
+		$key = $this->get_settings( 'key' );
+		if ( false === strpos( $key, ':' ) ) {
+			return rwmb_meta( $key );
+		}
+		list( $post_type, $field_id ) = explode( ':', $key );
+		rwmb_the_value( $field_id );
+	}
 }

@@ -27,4 +27,10 @@ trait MBEI_Settings {
 		list( $option_name, $field_id ) = explode( ':', $key );
 		return rwmb_meta( $field_id, [ 'object_type' => 'setting' ], $option_name );
 	}
+
+	private function the_value() {
+		$key = $this->get_settings( 'key' );
+		list( $option_name, $field_id ) = explode( ':', $key );
+		rwmb_the_value( $field_id, [ 'object_type' => 'setting' ], $option_name );
+	}
 }

@@ -32,4 +32,10 @@ trait MBEI_Archive {
 		list( $taxonomy, $field_id ) = explode( ':', $key );
 		return rwmb_meta( $field_id, [ 'object_type' => 'term' ], get_queried_object_id() );
 	}
+
+	private function the_value() {
+		$key = $this->get_settings( 'key' );
+		list( $taxonomy, $field_id ) = explode( ':', $key );
+		rwmb_the_value( $field_id, [ 'object_type' => 'term' ], get_queried_object_id() );
+	}
 }

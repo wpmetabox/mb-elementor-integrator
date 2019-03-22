@@ -9,7 +9,7 @@ trait MBEI_Text {
 	}
 
 	public function render() {
-		echo self::handle_get_value();
+		self::the_value();
 	}
 
 	private function get_supported_fields() {
