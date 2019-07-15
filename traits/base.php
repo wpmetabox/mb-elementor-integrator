@@ -28,7 +28,10 @@ trait MBEI_Base {
 
 	private function get_fields_by_object_type( $object_type ) {
 		$fields = rwmb_get_registry( 'field' )->get_by_object_type( $object_type );
-		return array_map( [ $this, 'remove_unsupported_fields' ], $fields );
+		$fields = array_map( [ $this, 'remove_unsupported_fields' ], $fields );
+		$fields = array_filter( $fields );
+
+		return $fields;
 	}
 
 	private function remove_unsupported_fields( $fields ) {
