@@ -16,11 +16,15 @@ trait MBEI_Image {
 			return;
 		}
 
+		// Single image.
 		if ( isset( $images['ID'] ) ) {
-			$images['id'] = $images['ID'];
-			return $images;
+			return [
+				'id'  => $images['ID'],
+				'url' => $images['full_url'],
+			];
 		}
 
+		// Multiple images.
 		$value = [];
 		foreach ( $images as $image ) {
 			$value[] = [
