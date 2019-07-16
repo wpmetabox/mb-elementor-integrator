@@ -27,38 +27,22 @@ function mb_elementor_integrator_register_tags( $dynamic_tags ) {
 		return;
 	}
 
-	require 'traits/base.php';
+	require 'vendor/autoload.php';
 
-	require 'traits/fields/text.php';
-	require 'traits/fields/image.php';
-	require 'traits/fields/video.php';
-
-	require 'traits/post.php';
-	require 'tags/post/text.php';
-	require 'tags/post/image.php';
-	require 'tags/post/video.php';
-	$dynamic_tags->register_tag( 'MBEI_Tag_Text' );
-	$dynamic_tags->register_tag( 'MBEI_Tag_Image' );
-	$dynamic_tags->register_tag( 'MBEI_Tag_Video' );
+	$dynamic_tags->register_tag( 'MBEI\Tags\Post\Text' );
+	$dynamic_tags->register_tag( 'MBEI\Tags\Post\Image' );
+	$dynamic_tags->register_tag( 'MBEI\Tags\Post\Video' );
 
 	if ( function_exists( 'mb_term_meta_load' ) ) {
-		require 'traits/archive.php';
-		require 'tags/archive/text.php';
-		require 'tags/archive/image.php';
-		require 'tags/archive/video.php';
-		$dynamic_tags->register_tag( 'MBEI_Tag_Archive_Text' );
-		$dynamic_tags->register_tag( 'MBEI_Tag_Archive_Image' );
-		$dynamic_tags->register_tag( 'MBEI_Tag_Archive_Video' );
+		$dynamic_tags->register_tag( 'MBEI\Tags\Archive\Text' );
+		$dynamic_tags->register_tag( 'MBEI\Tags\Archive\Image' );
+		$dynamic_tags->register_tag( 'MBEI\Tags\Archive\Video' );
 	}
 
 	if ( function_exists( 'mb_settings_page_load' ) ) {
-		require 'traits/settings.php';
-		require 'tags/settings/text.php';
-		require 'tags/settings/image.php';
-		require 'tags/settings/video.php';
-		$dynamic_tags->register_tag( 'MBEI_Tag_Settings_Text' );
-		$dynamic_tags->register_tag( 'MBEI_Tag_Settings_Image' );
-		$dynamic_tags->register_tag( 'MBEI_Tag_Settings_Video' );
+		$dynamic_tags->register_tag( 'MBEI\Tags\Settings\Text' );
+		$dynamic_tags->register_tag( 'MBEI\Tags\Settings\Image' );
+		$dynamic_tags->register_tag( 'MBEI\Tags\Settings\Video' );
 	}
 }
 

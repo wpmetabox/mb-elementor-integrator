@@ -1,7 +1,9 @@
 <?php
+namespace MBEI\Traits\Fields;
+
 use Elementor\Modules\DynamicTags\Module;
 
-trait MBEI_Text {
+trait Text {
 	public function get_categories() {
 		return [
 			Module::TEXT_CATEGORY,

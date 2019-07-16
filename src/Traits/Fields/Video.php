@@ -1,7 +1,9 @@
 <?php
+namespace MBEI\Traits\Fields;
+
 use Elementor\Modules\DynamicTags\Module;
 
-trait MBEI_Video {
+trait Video {
 	public function get_categories() {
 		return [
 			Module::URL_CATEGORY,

@@ -1,7 +1,9 @@
 <?php
+namespace MBEI\Traits\Fields;
+
 use Elementor\Modules\DynamicTags\Module;
 
-trait MBEI_Image {
+trait Image {
 	public function get_categories() {
 		return [
 			Module::IMAGE_CATEGORY,

@@ -3,9 +3,11 @@
  * Base trait for all object type that handle register groups and fields.
  */
 
+namespace MBEI\Traits;
+
 use Elementor\Controls_Manager;
 
-trait MBEI_Base {
+trait Base {
 	public function get_title() {
 		return __( 'Meta Box Field', 'mb-elementor-integrator' );
 	}

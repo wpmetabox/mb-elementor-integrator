@@ -1,5 +1,7 @@
 <?php
-trait MBEI_Settings {
+namespace MBEI\Traits;
+
+trait Settings {
 	public function get_group() {
 		return 'site';
 	}

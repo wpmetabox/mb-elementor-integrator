@@ -1,5 +1,7 @@
 <?php
-trait MBEI_Post {
+namespace MBEI\Traits;
+
+trait Post {
 	public function get_group() {
 		return 'post';
 	}

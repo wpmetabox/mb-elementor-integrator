@@ -1,5 +1,7 @@
 <?php
-trait MBEI_Archive {
+namespace MBEI\Traits;
+
+trait Archive {
 	public function get_group() {
 		return 'archive';
 	}
