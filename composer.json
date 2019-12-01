@@ -1,4 +1,26 @@
 {
+  "name": "wpmetabox/mb-elementor-integrator",
+  "type": "wordpress-plugin",
+  "keywords": [
+    "wordpress",
+    "ui",
+    "elementor",
+    "meta-box",
+    "wordpress-plugin",
+    "custom-field"
+  ],
+  "description": "Connect and display custom fields created by the Meta Box plugin in the Elementor’s dynamic tags.",
+  "homepage": "https://metabox.io/plugins/mb-elementor-integrator/",
+  "license": "GPL-2.0",
+  "minimum-stability": "stable",
+  "authors": [
+    {
+      "name": "Tran Ngoc Tuan Anh",
+      "email": "anhtnt@elightup.com",
+      "homepage": "https://metabox.io",
+      "role": "Developer"
+    }
+  ],
   "autoload": {
   	"psr-4": {"MBEI\\" : "src/"}
   }
