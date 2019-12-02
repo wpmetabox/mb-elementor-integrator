@@ -13,7 +13,7 @@
  */
 
 // Prevent loading this file directly.
-defined( 'ABSPATH' ) || exit;
+defined( 'ABSPATH' ) || die;
 
 add_action( 'elementor/dynamic_tags/register_tags', 'mb_elementor_integrator_register_tags' );
 
@@ -23,11 +23,13 @@ add_action( 'elementor/dynamic_tags/register_tags', 'mb_elementor_integrator_reg
  * @param object $dynamic_tags Elementor dynamic tags instance.
  */
 function mb_elementor_integrator_register_tags( $dynamic_tags ) {
-	if ( !defined( 'RWMB_VER' ) ) {
+	if ( ! defined( 'RWMB_VER' ) ) {
 		return;
 	}
 
-	require 'vendor/autoload.php';
+	if ( file_exists( __DIR__ . '/vendor' ) ) {
+		require __DIR__ . '/vendor/autoload.php';
+	}
 
 	$dynamic_tags->register_tag( 'MBEI\Tags\Post\Text' );
 	$dynamic_tags->register_tag( 'MBEI\Tags\Post\Image' );
