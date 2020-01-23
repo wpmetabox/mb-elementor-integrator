@@ -42,6 +42,7 @@ trait Video {
 			'oembed',
 			'url',
 			'file',
+			'file_input',
 		];
 	}
 }
