@@ -12,7 +12,7 @@ trait Video {
 	}
 
 	public function get_value( array $options = [] ) {
-		$url = self::handle_get_value();
+		$url = $this->handle_get_value();
 
 		if ( empty( $url ) ) {
 			return;
@@ -33,16 +33,5 @@ trait Video {
 		}
 
 		return $value;
-	}
-
-	private function get_supported_fields() {
-		return [
-			'video',
-			'text',
-			'oembed',
-			'url',
-			'file',
-			'file_input',
-		];
 	}
 }

@@ -12,7 +12,7 @@ trait Image {
 	}
 
 	public function get_value( array $options = [] ) {
-		$images = self::handle_get_value();
+		$images = $this->handle_get_value();
 
 		if ( empty( $images ) ) {
 			return;
@@ -35,15 +35,5 @@ trait Image {
 		}
 
 		return $value;
-	}
-
-	private function get_supported_fields() {
-		return [
-			'image',
-			'single_image',
-			'image_advanced',
-			'image_upload',
-			'image_select',
-		];
 	}
 }

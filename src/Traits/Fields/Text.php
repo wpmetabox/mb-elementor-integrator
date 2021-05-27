@@ -13,10 +13,6 @@ trait Text {
 	}
 
 	public function render() {
-		self::the_value();
-	}
-
-	private function get_supported_fields() {
-		return null;
+		$this->the_value();
 	}
 }
