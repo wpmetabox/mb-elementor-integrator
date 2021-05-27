@@ -9,7 +9,7 @@ trait Post {
 	private function get_option_groups() {
 		$groups = [];
 
-		$fields = $this->get_fields_by_object_type( 'post' );
+		$fields = rwmb_get_registry( 'field' )->get_by_object_type( 'post' );
 		$fields = array_diff_key( $fields, array_flip( ['mb-post-type', 'mb-taxonomy'] ) );
 
 		foreach ( $fields as $post_type => $list ) {

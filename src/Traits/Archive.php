@@ -9,7 +9,7 @@ trait Archive {
 	private function get_option_groups() {
 		$groups = [];
 
-		$fields = $this->get_fields_by_object_type( 'term' );
+		$fields = rwmb_get_registry( 'field' )->get_by_object_type( 'term' );
 		foreach ( $fields as $taxonomy => $list ) {
 			$taxonomy_object = get_taxonomy( $taxonomy );
 			if ( ! $taxonomy_object ) {

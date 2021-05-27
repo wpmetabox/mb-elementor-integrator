@@ -9,7 +9,7 @@ trait Settings {
 	private function get_option_groups() {
 		$groups = [];
 
-		$fields = $this->get_fields_by_object_type( 'setting' );
+		$fields = rwmb_get_registry( 'field' )->get_by_object_type( 'setting' );
 		foreach ( $fields as $option_name => $list ) {
 			$options = [];
 			foreach ( $list as $field ) {
