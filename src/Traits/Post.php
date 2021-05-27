@@ -17,7 +17,9 @@ trait Post {
 			if ( ! $post_type_object ) {
 				continue;
 			}
-			$options = [];
+			$options = [
+				'' => __( '-- Select a field --', 'mb-elementor-integrator' ),
+			];
 			foreach ( $list as $field ) {
 				$options[ "{$post_type}:{$field['id']}" ] = $field['name'] ?: $field['id'];
 			}

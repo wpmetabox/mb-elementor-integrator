@@ -15,8 +15,9 @@ trait Archive {
 			if ( ! $taxonomy_object ) {
 				continue;
 			}
-			$options = [];
-			$label = $taxonomy_object->labels->singular_name;
+			$options = [
+				'' => __( '-- Select a field --', 'mb-elementor-integrator' ),
+			];
 			foreach ( $list as $field ) {
 				$options[ "{$taxonomy}:{$field['id']}" ] = $field['name'] ?: $field['id'];
 			}

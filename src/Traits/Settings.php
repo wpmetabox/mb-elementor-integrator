@@ -11,7 +11,9 @@ trait Settings {
 
 		$fields = rwmb_get_registry( 'field' )->get_by_object_type( 'setting' );
 		foreach ( $fields as $option_name => $list ) {
-			$options = [];
+			$options = [
+				'' => __( '-- Select a field --', 'mb-elementor-integrator' ),
+			];
 			foreach ( $list as $field ) {
 				$options[ "{$option_name}:{$field['id']}" ] = $field['name'] ?: $field['id'];
 			}
