@@ -32,6 +32,9 @@ trait Post {
 
 	private function handle_get_value() {
 		$key = $this->get_settings( 'key' );
+		if ( ! $key ) {
+			return null;
+		}
 		if ( false === strpos( $key, ':' ) ) {
 			return rwmb_meta( $key );
 		}
@@ -41,6 +44,9 @@ trait Post {
 
 	private function the_value() {
 		$key = $this->get_settings( 'key' );
+		if ( ! $key ) {
+			return null;
+		}
 		if ( false === strpos( $key, ':' ) ) {
 			return rwmb_meta( $key );
 		}
