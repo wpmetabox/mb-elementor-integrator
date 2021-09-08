@@ -14,7 +14,7 @@
 
 // Prevent loading this file directly.
 defined( 'ABSPATH' ) || die;
-
+use Elementor\Plugin;
 if ( ! function_exists( 'mb_elementor_integrator_register_tags' ) ) {
 	add_action( 'elementor/dynamic_tags/register_tags', 'mb_elementor_integrator_register_tags' );
 
@@ -48,4 +48,13 @@ if ( ! function_exists( 'mb_elementor_integrator_register_tags' ) ) {
 			$dynamic_tags->register_tag( 'MBEI\Tags\Settings\Video' );
 		}
 	}
+}
+add_action( 'elementor_pro/init', 'widget_elementor_init' );
+function widget_elementor_init(){
+	require_once __DIR__ . '/widgets/posts.php';
+
+	$mbposts =	new MBPosts();
+
+		// Let Elementor know about our widget
+	Plugin::instance()->widgets_manager->register_widget_type( $mbposts  );
 }
