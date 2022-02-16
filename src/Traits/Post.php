@@ -53,6 +53,10 @@ trait Post {
 			return rwmb_meta( $key );
 		}
 		list( $post_type, $field_id ) = explode( ':', $key );
-		rwmb_the_value( $field_id );
+		if ( false !== strpos( $key, 'color' ) ) {
+			echo rwmb_get_value( $field_id );
+		} else {
+			rwmb_the_value( $field_id );
+		}
 	}
 }
