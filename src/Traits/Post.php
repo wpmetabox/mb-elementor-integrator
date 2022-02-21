@@ -55,7 +55,7 @@ trait Post {
 		list( $post_type, $field_id ) = explode( ':', $key );
 		$field = rwmb_get_field_settings( $field_id, $args, null );
 
-		if ( 'color' === $field['type'] ) {
+		if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {
 			echo rwmb_get_value( $field_id );
 		} else {
 			rwmb_the_value( $field_id );
