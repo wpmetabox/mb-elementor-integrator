@@ -3,8 +3,8 @@ Contributors: elightup, metabox, rilwis
 Donate link: https://metabox.io/pricing/
 Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, custom field, elementor, dynamic tags
 Requires at least: 4.9
-Tested up to: 5.7.2
-Stable tag: 2.0.7
+Tested up to: 5.9.1
+Stable tag: 2.0.8
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with Elementor page builder via dynamic tags.
@@ -50,6 +50,9 @@ Install **Meta Box - Elementor Integrator** extension
 2. Connect to a Meta Box Field
 
 == Changelog ==
+
+= 2.0.8 - 2022-03-10 =
+- Fix color not working for style tab
 
 = 2.0.7 - 2021-05-27 =
 - Fix field not showing if it's the default selected field
