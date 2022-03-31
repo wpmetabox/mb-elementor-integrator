@@ -26,7 +26,7 @@ class DLoop extends Single {
 	}
 
 	protected static function get_site_editor_thumbnail_url() {
-		return plugin_dir_url( __DIR__ ) . 'assets/images/loop.svg';
+		return plugin_dir_url(dirname(__DIR__) ) . 'assets/images/loop.svg';
 	}
 
 	public static function get_title() {

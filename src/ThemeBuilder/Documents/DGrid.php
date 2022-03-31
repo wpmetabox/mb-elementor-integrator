@@ -22,7 +22,7 @@ class DGrid extends Theme_Section_Document {
 	}
 
 	protected static function get_site_editor_thumbnail_url() {
-		return plugin_dir_url( __DIR__ ) . 'assets/images/custom-grid.svg';
+		return plugin_dir_url(dirname(__DIR__) ) . 'assets/images/custom-grid.svg';
 	}
 
 	public function get_name() {
