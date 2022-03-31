@@ -72,7 +72,7 @@ class LoopItem extends Widget_Base {
 	 * @since 0.1
 	 * @access protected
 	 */
-	protected function _register_controls() {
+	public function register_controls() {
 
 		$this->start_controls_section(
 			'content_section',
