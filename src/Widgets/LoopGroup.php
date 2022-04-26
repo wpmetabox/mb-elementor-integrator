@@ -124,16 +124,19 @@ class LoopGroup extends Widget_Base {
 
 		$repeater = new Repeater();
 
-		// $repeater->add_control('subfield_hidden', [
-		// 'label'       => esc_html__( 'Field hidden', 'mb-elementor-integrator' ),
-		// 'type'        => Controls_Manager::HIDDEN,
-		// ]);
-
 		$repeater->add_control('subfield', [
 			'label'   => esc_html__( 'Field name', 'mb-elementor-integrator' ),
 			'type'    => Controls_Manager::SELECT,
 			// 'label_block' => true,
 			'options' => [],
+		]);
+
+		$repeater->add_control('display_text_for_link', [
+			'label'     => esc_html__( 'Text Display', 'mb-elementor-integrator' ),
+			'type'      => Controls_Manager::TEXT,
+			'condition' => [
+				'subfield!' => '',
+			],
 		]);
 
 		$this->add_control('map-field-group', [
@@ -149,7 +152,7 @@ class LoopGroup extends Widget_Base {
 				'field-group!' => '',
 			],
 			'default'      => [],
-			'title_field'  => '<i class="eicon-circle"></i> <span style="text-transform: capitalize;">{{{ subfield.split(":")[1] }}}</span>',
+			'title_field'  => '<i class="eicon-circle"></i> <span style="text-transform: capitalize;">{{{ subfield ? subfield.split(":")[1]: "" }}}</span>',
 		]);
 
 		$this->end_controls_section();
@@ -325,11 +328,16 @@ class LoopGroup extends Widget_Base {
 		$data_column = [];
 		if ( ! empty( $settings['map-field-group'] ) ) {
 			foreach ( $settings['map-field-group'] as $column ) {
-				$data_column[] = explode( ':', $column['subfield'] )[1];
+				$subfield      = explode( ':', $column['subfield'] )[1];
+				$data_column[] = [
+					'type'      => ( false !== strpos( $subfield, 'link' ) || false !== strpos( $subfield, 'url' ) ) ? 'url' : 'text',
+					'field'     => explode( ':', $column['subfield'] )[1],
+					'text_link' => $column['display_text_for_link'],
+				];
 			}
 		}
 
-		// print_r($settings);die();
+		// print_r($data_column);die();
 		?>
 		<div class="mbei-loop-group">
 			<?php
@@ -344,7 +352,9 @@ class LoopGroup extends Widget_Base {
 						<?php foreach ( $data_groups as $data_group ) : ?>
 							<div class="field-item mb-column">
 								<?php foreach ( $data_column as $col ) : ?>
-									<div class="mb-subfield-<?= $col; ?>"><?= $data_group[ $col ]; ?></div>
+									<div class="mb-subfield-<?= $col['field']; ?>">
+										<?php GroupField::display_field( $data_group[ $col['field'] ], $col ); ?>
+									</div>
 								<?php endforeach; ?>
 							</div>
 						<?php endforeach; ?>                    
@@ -353,7 +363,7 @@ class LoopGroup extends Widget_Base {
 							<thead>
 								<tr>
 									<?php foreach ( $data_column as $col ) : ?>
-										<th class="mb-subfield-title-<?= $col; ?>"><?= ucfirst( $col ) ?></th>
+										<th class="mb-subfield-title-<?= $col['field']; ?>"><?= ucfirst( $col['field'] ) ?></th>
 									<?php endforeach; ?>
 								</tr>
 							</thead>
@@ -361,7 +371,7 @@ class LoopGroup extends Widget_Base {
 								<?php foreach ( $data_groups as $data_group ) : ?>
 									<tr>
 										<?php foreach ( $data_column as $col ) : ?>
-											<td class="mb-subfield-<?= $col; ?>"><?= $data_group[ $col ]; ?></td>
+											<td class="mb-subfield-<?= $col['field']; ?>"><?= $data_group[ $col['field'] ]; ?></td>
 										<?php endforeach; ?>
 									</tr>
 								<?php endforeach; ?>   
@@ -369,7 +379,7 @@ class LoopGroup extends Widget_Base {
 						</table>
 					<?php endif ?>
 				</div>
-			
+
 				<?php
 				if ( ! empty( $settings['mb_pagination'] ) && isset( $total ) && 1 < $total ) {
 					GroupField::pagination([

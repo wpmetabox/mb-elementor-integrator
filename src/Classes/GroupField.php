@@ -105,4 +105,14 @@ class GroupField {
 			require $path_file;
 		}
 	}
+
+	public static function display_field( $data, $data_field = [] ) {
+		extract( $data_field );
+
+		$path_file = plugin_dir_path( __DIR__ ) . 'Templates/display_field-' . $type . '.php';
+
+		if ( file_exists( $path_file ) ) {
+			require $path_file;
+		}
+	}
 }
