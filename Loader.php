@@ -11,6 +11,7 @@ class MBEI_Loader {
 
 		// Check plugin elementor and elementor pro is loaded.
 		if ( Dependencies::elementor( true ) ) {
+			add_action( 'elementor/controls/register', [ $this, 'register_controls' ] );
 			add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_skins' ] );
 			$this->init();
 		}
@@ -23,6 +24,7 @@ class MBEI_Loader {
 	}
 
 	public function modules() {
+		( new \MBEI\Classes\GroupField() )->init();
 		new \MBEI\Classes\PaginationAjax();
 	}
 
@@ -41,7 +43,13 @@ class MBEI_Loader {
 	public function register_widgets() {
 		add_action('elementor/widgets/register', function( $widgets_manager ) {
 			$widgets_manager->register( new MBEI\Widgets\LoopItem() );
+			$widgets_manager->register( new MBEI\Widgets\LoopGroup() );
 		});
+	}
+
+	public function register_controls( $controls_manager ) {
+		$controls_manager->register( new MBEI\Widgets\Controls\GroupField() );
+		$controls_manager->register( new MBEI\Widgets\Controls\ListField() );
 	}
 
 	/**
@@ -74,6 +82,7 @@ class MBEI_Loader {
 		if ( ! $this->is_valid() ) {
 			return;
 		}
+
 		// Add a custom skin for the POSTS widget
 		add_action('elementor/widget/posts/skins_init', function( $widget ) {
 			$widget->add_skin( new MBEI\Widgets\Skins\Post( $widget ) );
