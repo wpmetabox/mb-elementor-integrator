@@ -76,9 +76,9 @@ class GroupField {
 	}
 
 	/**
-	 * Check Type google map
+	 * Check Type field group
 	 * @param array $meta_box
-	 * @return boolen $is_map
+	 * @return boolen $fields
 	 */
 	private static function get_field_type_group( $meta_box ) {
 		$fields = [];
@@ -97,4 +97,12 @@ class GroupField {
 		return $fields;
 	}
 
+	public static function pagination( $options = [] ) {
+		extract( $options );
+		$path_file = plugin_dir_path( __DIR__ ) . 'Templates/pagination-' . $type . '.php';
+
+		if ( file_exists( $path_file ) ) {
+			require $path_file;
+		}
+	}
 }

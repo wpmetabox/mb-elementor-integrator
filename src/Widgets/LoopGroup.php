@@ -275,6 +275,24 @@ class LoopGroup extends Widget_Base {
 			],
 		]);
 
+		$this->add_control('mb_pagination_prev', [
+			'label'     => __( 'Text Prev', 'mb-elementor-integrator' ),
+			'type'      => Controls_Manager::TEXT,
+			'default'   => '< Prev',
+			'condition' => [
+				'mb_pagination!' => 'numbers',
+			],
+		]);
+
+		$this->add_control('mb_pagination_next', [
+			'label'     => __( 'Text Next', 'mb-elementor-integrator' ),
+			'type'      => Controls_Manager::TEXT,
+			'default'   => 'Next >',
+			'condition' => [
+				'mb_pagination!' => 'numbers',
+			],
+		]);
+
 		$this->end_controls_section();
 	}
 
@@ -293,6 +311,15 @@ class LoopGroup extends Widget_Base {
 		$settings = $this->get_settings_for_display();
 		if ( ! empty( $settings['field-group'] ) ) {
 			$data_groups = rwmb_get_value( $settings['field-group'], $post->ID );
+		}
+
+		// Check Paging
+		if ( 0 < count( $data_groups ) && $settings['mb_limit'] > 0 ) {
+			$page        = isset( $_GET['mb_page'] ) ? intval( $_GET['mb_page'] ) : 1;
+			$limit       = intval( $settings['mb_limit'] );
+			$offest      = $limit * ( $page - 1 );
+			$total       = intval( ceil( count( $data_groups ) / $limit ) );
+			$data_groups = array_slice( $data_groups, $offest, $limit );
 		}
 
 		$data_column = [];
@@ -342,6 +369,19 @@ class LoopGroup extends Widget_Base {
 						</table>
 					<?php endif ?>
 				</div>
+			
+				<?php
+				if ( ! empty( $settings['mb_pagination'] ) && isset( $total ) && 1 < $total ) {
+					GroupField::pagination([
+						'page'      => $page,
+						'limit'     => $limit,
+						'total'     => $total,
+						'type'      => $settings['mb_pagination'],
+						'text_prev' => $settings['mb_pagination_prev'],
+						'text_next' => $settings['mb_pagination_next'],
+					]);
+				}
+				?>
 			<?php endif ?>
 		</div>
 		<?php
