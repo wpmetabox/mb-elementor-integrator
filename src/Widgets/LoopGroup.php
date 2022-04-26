@@ -282,8 +282,20 @@ class LoopGroup extends Widget_Base {
 			'label'     => __( 'Text Prev', 'mb-elementor-integrator' ),
 			'type'      => Controls_Manager::TEXT,
 			'default'   => '< Prev',
-			'condition' => [
-				'mb_pagination!' => 'numbers',
+			'conditions' => [
+                'relation' => 'or',
+                'terms'    => [
+                    [
+                    'name'     => 'mb_pagination',
+                    'operator' => '==',
+                     'value'   => 'prev_next',
+                    ],
+                    [
+                    'name'     => 'mb_pagination',
+                    'operator' => '==',
+                     'value'   => 'numbers_and_prev_next',
+                    ]                    
+                ],
 			],
 		]);
 
@@ -291,8 +303,20 @@ class LoopGroup extends Widget_Base {
 			'label'     => __( 'Text Next', 'mb-elementor-integrator' ),
 			'type'      => Controls_Manager::TEXT,
 			'default'   => 'Next >',
-			'condition' => [
-				'mb_pagination!' => 'numbers',
+			'conditions' => [
+                'relation' => 'or',
+                'terms'    => [
+                    [
+                    'name'     => 'mb_pagination',
+                    'operator' => '==',
+                     'value'   => 'prev_next',
+                    ],
+                    [
+                    'name'     => 'mb_pagination',
+                    'operator' => '==',
+                     'value'   => 'numbers_and_prev_next',
+                    ]                    
+                ],
 			],
 		]);
 
