@@ -149,7 +149,7 @@ class LoopGroup extends Widget_Base {
 				'field-group!' => '',
 			],
 			'default'      => [],
-			'title_field'  => '<i class="eicon-circle"></i> <span>{{{ subfield }}}</span>',
+			'title_field'  => '<i class="eicon-circle"></i> <span style="text-transform: capitalize;">{{{ subfield.split(":")[1] }}}</span>',
 		]);
 
 		$this->end_controls_section();
