@@ -9,30 +9,16 @@ use MBEI\Widgets\Controls\MBControls;
 use MBEI\GroupField;
 use Elementor\Repeater;
 
-class LoopGroup extends Widget_Base {
+class MBGroup extends Widget_Base {
 
 	public function __construct( $data = [], $args = null ) {
 		parent::__construct( $data, $args );
 
-		wp_register_script( 'script-loop-group-frontend', plugin_dir_url( __DIR__ ) . 'assets/js/loop-group-frontend.js', [ 'elementor-frontend' ], '1.0.0', true );
-		// wp_register_script('script-mbei', plugin_dir_url(__DIR__) . 'assets/js/mbei.js', ['elementor-frontend'], '1.0.0', true);
-		wp_register_style( 'style-loop-group', plugin_dir_url( __DIR__ ) . 'assets/css/loop-group.css' );
-
-		// add_action( 'elementor/widget/before_render_content', [$this, 'script_admin'] );
-	}
-
-	// public function script_admin() {
-	// wp_enqueue_script('script-mbei', plugin_dir_url(__DIR__) . 'assets/js/mbei.js', ['elementor-common'], '1.0.0', true);
-	// wp_enqueue_script('script-loop-group-common', plugin_dir_url(__DIR__) . 'assets/js/loop-group-admin.js', ['elementor-common'], '1.0.0', true);
-	// }
-
-
-	public function get_script_depends() {
-		return [ 'script-loop-group-frontend' ];
+		wp_register_style( 'style-mb-group', plugin_dir_url( __DIR__ ) . 'assets/css/mb-group.css', [], RWMB_VER );
 	}
 
 	public function get_style_depends() {
-		return [ 'style-loop-group' ];
+		return [ 'style-mb-group' ];
 	}
 
 	/**
@@ -46,7 +32,7 @@ class LoopGroup extends Widget_Base {
 	 * @return string Widget name.
 	 */
 	public function get_name() {
-		return 'mb-loop-group';
+		return 'metabox-group';
 	}
 
 	/**
@@ -221,7 +207,7 @@ class LoopGroup extends Widget_Base {
 		$this->add_control('mb_type_list', [
 			'label'   => esc_html__( 'Type List', 'mb-elementor-integrator' ),
 			'type'    => Controls_Manager::SELECT,
-			'default' => 'column',
+			'default' => 'mb-columns',
 			'options' => [
 				'mb-columns' => 'Column',
 				'mb-table'   => 'Table',
@@ -322,12 +308,13 @@ class LoopGroup extends Widget_Base {
 	 * @access protected
 	 */
 	protected function render() {
-		global $post;
+		$post = GroupField::get_current_post();
+
 		$data_groups = [];
 
 		$settings = $this->get_settings_for_display();
 		if ( ! empty( $settings['field-group'] ) ) {
-			$data_groups = rwmb_get_value( $settings['field-group'], $post->ID );
+			$data_groups = rwmb_get_value( $settings['field-group'], [], $post->ID );
 		}
 
 		// Check Paging
@@ -341,11 +328,15 @@ class LoopGroup extends Widget_Base {
 
 		$data_column = [];
 		if ( ! empty( $settings['map-field-group'] ) ) {
+			$fields = GroupField::get_field_group( $settings['field-group'] );
+
 			foreach ( $settings['map-field-group'] as $column ) {
-				$subfield      = explode( ':', $column['subfield'] )[1];
+				$subfield = explode( ':', $column['subfield'] )[1];
+				$field    = array_search( $subfield, array_column( $fields['fields'], 'id' ) );
+
 				$data_column[] = [
-					'type'      => ( false !== strpos( $subfield, 'link' ) || false !== strpos( $subfield, 'url' ) ) ? 'url' : 'text',
-					'field'     => explode( ':', $column['subfield'] )[1],
+					'type'      => $fields['fields'][ $field ]['type'],
+					'field'     => $subfield,
 					'text_link' => $column['display_text_for_link'],
 				];
 			}

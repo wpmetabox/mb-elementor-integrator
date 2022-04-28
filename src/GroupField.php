@@ -9,6 +9,18 @@ class GroupField {
 		add_action( 'wp_ajax_nopriv_group_subfield', [ $this, 'group_subfield' ] );
 	}
 
+	public static function get_current_post() {
+		global $post, $wp_query;
+
+		if ( ! empty( $post ) ) {
+			return $post;
+		}
+
+		list($post_type, $slug) = explode( '/', $wp_query->query['pagename'] );
+		$current_post           = get_page_by_path( $slug, OBJECT, $post_type );
+		return $current_post;
+	}
+
 	public function group_subfield() {
 		// Check for nonce security.
 		if ( ! wp_verify_nonce( $_POST['nonce'], 'mbei-ajax' ) ) {
@@ -108,11 +120,34 @@ class GroupField {
 
 	public static function display_field( $data, $data_field = [] ) {
 		extract( $data_field );
+		$file_type = 'text';
+		switch ( $type ) {
+			case 'text':
+			case 'textarea':
+			case 'number':
+			case 'wysiwyg':
+			case 'email':
+			case 'select':
+			case 'select_advanced':
+				$file_type = 'text';
+				break;
+			case 'image':
+			case 'image_advanced':
+			case 'image_select':
+			case 'image_upload':
+			case 'single_image':
+				$file_type = 'image';
+				break;
+			default:
+				$file_type = $type;
+				break;
+		}
 
-		$path_file = plugin_dir_path( __DIR__ ) . 'Templates/display_field-' . $type . '.php';
+		$path_file = plugin_dir_path( __DIR__ ) . 'src/Templates/display_field-' . $file_type . '.php';
 
 		if ( file_exists( $path_file ) ) {
 			require $path_file;
 		}
 	}
+
 }

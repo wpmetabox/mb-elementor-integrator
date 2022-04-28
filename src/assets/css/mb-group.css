@@ -1,0 +1,22 @@
+.mbei-loop-group{
+    
+}
+
+.mbei-loop-group .mbei-fields.mb-columns{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.mbei-loop-group .mbei-fields.mb-columns .mb-column{
+    padding: 0 20px 20px 20px;
+}
+
+.mbei-pagination{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+.mbei-pagination li{
+    display: flex;
+}

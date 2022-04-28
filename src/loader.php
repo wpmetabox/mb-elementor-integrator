@@ -40,7 +40,7 @@ class MBEI_Loader {
 
 	public function register_widgets() {
 		add_action('elementor/widgets/register', function( $widgets_manager ) {
-			$widgets_manager->register( new MBEI\Widgets\LoopGroup() );
+			$widgets_manager->register( new MBEI\Widgets\MBGroup() );
 		});
 	}
 
@@ -78,6 +78,11 @@ class MBEI_Loader {
 		if ( ! $this->is_valid() ) {
 			return;
 		}
+
+		// Add a custom skin for the POSTS widget
+		add_action('elementor/widget/metabox-group/skins_init', function( $widget ) {
+			$widget->add_skin( new MBEI\Widgets\Skins\Group_Skin( $widget ) );
+		});
 	}
 
 }
