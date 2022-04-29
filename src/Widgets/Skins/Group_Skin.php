@@ -56,7 +56,7 @@ class Group_Skin extends Skin_Base {
 							INNER JOIN $wpdb->term_taxonomy ON
 								$wpdb->term_relationships.term_taxonomy_id=$wpdb->term_taxonomy.term_taxonomy_id
 							INNER JOIN $wpdb->terms ON
-								$wpdb->term_taxonomy.term_id=$wpdb->terms.term_id AND $wpdb->terms.slug='mb_loop'
+								$wpdb->term_taxonomy.term_id=$wpdb->terms.term_id AND $wpdb->terms.slug='metabox_group_template'
 							INNER JOIN $wpdb->posts ON
 								$wpdb->term_relationships.object_id=$wpdb->posts.ID
 				WHERE  $wpdb->posts.post_status='publish'"

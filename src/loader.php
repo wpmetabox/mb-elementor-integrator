@@ -1,4 +1,5 @@
 <?php
+
 use MBEI\Dependencies;
 
 class MBEI_Loader {
@@ -13,12 +14,13 @@ class MBEI_Loader {
 		if ( Dependencies::elementor( true ) ) {
 			add_action( 'elementor/controls/register', [ $this, 'register_controls' ] );
 			add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_skins' ] );
+			add_action( 'elementor/theme/register_conditions', [ $this, 'register_conditions' ], 100 );
 			$this->init();
 		}
 	}
 
 	public function init() {
-		// $this->register_locations();
+		$this->register_locations();
 		$this->register_widgets();
 		$this->modules();
 	}
@@ -34,8 +36,12 @@ class MBEI_Loader {
 		return true;
 	}
 
-	public function register_locations() {
+	public function register_conditions( $conditions_manager ) {
+		$conditions_manager->get_condition( 'general' )->register_sub_condition( new MBEI\ThemeBuilder\Conditions\Group() );
+	}
 
+	public function register_locations() {
+		new \MBEI\Widgets\Locations\Group();
 	}
 
 	public function register_widgets() {
