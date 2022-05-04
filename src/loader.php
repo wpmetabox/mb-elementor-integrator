@@ -1,17 +1,16 @@
 <?php
 
-use MBEI\Dependencies;
-
 class MBEI_Loader {
 
 	public function __construct() {
+
 		// Check plugin elementor is loaded.
-		if ( Dependencies::elementor() ) {
-			add_action( 'elementor/dynamic_tags/register_tags', [ $this, 'register_tags' ] );
-		}
+        if ( defined( 'ELEMENTOR_VERSION' ) ) {
+            add_action( 'elementor/dynamic_tags/register_tags', [ $this, 'register_tags' ] );
+        }
 
 		// Check plugin elementor and elementor pro is loaded.
-		if ( Dependencies::elementor( true ) ) {
+		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
 			add_action( 'elementor/controls/register', [ $this, 'register_controls' ] );
 			add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_skins' ] );
 			add_action( 'elementor/theme/register_conditions', [ $this, 'register_conditions' ], 100 );
