@@ -1,10 +1,5 @@
 const path = require( 'path' );
 
-const externals = {
-    'React': 'React',
-    // 'react-dom': 'ReactDOM'
-};
-
 module.exports = {
     // devtool: '',
     entry: './src/assets/app/mbei.js',
@@ -26,6 +21,5 @@ module.exports = {
                 }
             }
         ]
-    },
-    externals
+    }
 };
