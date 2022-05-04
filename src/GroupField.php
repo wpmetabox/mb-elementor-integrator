@@ -23,9 +23,7 @@ class GroupField {
 
 	public function group_subfield() {
 		// Check for nonce security.
-		if ( ! wp_verify_nonce( $_POST['nonce'], 'mbei-ajax' ) ) {
-			die();
-		}
+        check_ajax_referer( 'mbei-ajax', 'nonce' );
 		$id = $_POST['groupfield'];
 
 		$groupfield = self::get_field_group( $id );
