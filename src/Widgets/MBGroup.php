@@ -5,7 +5,6 @@ namespace MBEI\Widgets;
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
 use Elementor\Group_Control_Typography;
-use MBEI\Widgets\Controls\MBControls;
 use MBEI\GroupField;
 use Elementor\Repeater;
 

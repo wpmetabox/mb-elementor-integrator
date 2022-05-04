@@ -5,13 +5,12 @@ class MBEI_Loader {
 	public function __construct() {
 
 		// Check plugin elementor is loaded.
-        if ( defined( 'ELEMENTOR_VERSION' ) ) {
-            add_action( 'elementor/dynamic_tags/register_tags', [ $this, 'register_tags' ] );
-        }
+		if ( defined( 'ELEMENTOR_VERSION' ) ) {
+			add_action( 'elementor/dynamic_tags/register_tags', [ $this, 'register_tags' ] );
+		}
 
 		// Check plugin elementor and elementor pro is loaded.
 		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
-			add_action( 'elementor/controls/register', [ $this, 'register_controls' ] );
 			add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_skins' ] );
 			add_action( 'elementor/theme/register_conditions', [ $this, 'register_conditions' ], 100 );
 			$this->init();
@@ -25,7 +24,7 @@ class MBEI_Loader {
 	}
 
 	public function modules() {
-		( new \MBEI\GroupField() )->init();
+		new \MBEI\GroupField();
 	}
 
 	private function is_valid() {
@@ -47,10 +46,6 @@ class MBEI_Loader {
 		add_action('elementor/widgets/register', function( $widgets_manager ) {
 			$widgets_manager->register( new MBEI\Widgets\MBGroup() );
 		});
-	}
-
-	public function register_controls( $controls_manager ) {
-		$controls_manager->register( new MBEI\Widgets\Controls\GroupField() );
 	}
 
 	/**
