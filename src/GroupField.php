@@ -23,7 +23,7 @@ class GroupField {
 
 	public function group_subfield() {
 		// Check for nonce security.
-        check_ajax_referer( 'mbei-ajax', 'nonce' );
+		check_ajax_referer( 'mbei-ajax', 'nonce' );
 		$id = $_POST['groupfield'];
 
 		$groupfield = self::get_field_group( $id );
@@ -47,37 +47,49 @@ class GroupField {
 	}
 
 	public static function get_field_group( $key = null ) {
-		$meta_boxs = apply_filters( 'rwmb_meta_boxes', [] );
+		$field_registry = rwmb_get_registry( 'field' );
+		$post_types     = $field_registry->get_by_object_type( 'post' );
 
-		$fields = [];
-		if ( 0 < count( $meta_boxs ) ) {
-			foreach ( $meta_boxs as $meta_box ) {
-				$field = self::get_field_type_group( $meta_box );
-				if ( 0 < count( $field ) ) {
-					foreach ( $field as $f ) {
-						if ( ! empty( $key ) ) {
-							if ( $key === $f['id'] ) {
-								array_push( $fields, $f );
-							}
-						} else {
-							array_push( $fields, $f );
-						}
+		$return_fields = [];
+		if ( 0 < count( $post_types ) ) {
+			foreach ( $post_types as $fields ) {
+				// Fields is empty
+				if ( 0 === count( $fields ) ) {
+					continue;
+				}
+				// get list field type=group
+				$group_fields = self::get_field_type_group( $fields );
+				if ( 0 === count( $group_fields ) ) {
+					continue;
+				}
+
+				foreach ( $group_fields as $group_field ) {
+					if ( ! empty( $key ) && $key !== $group_field['id'] ) {
+						continue;
+					}
+
+					if ( ! empty( $key ) && $key === $group_field['id'] ) {
+						array_push( $return_fields, $group_field );
+					} else {
+						array_push( $return_fields, $f );
 					}
 				}
 			}
 		}
 
-		if ( ! empty( $key ) && 0 < count( $fields ) ) {
-			return $fields[0];
+		if ( ! empty( $key ) && 0 < count( $return_fields ) ) {
+			return $return_fields[0];
 		}
 
-		return array_filter( $fields );
+		return array_filter( $return_fields );
 	}
 
 	public static function get_list_field_group() {
 		$fields = self::get_field_group();
-		$list   = [
-			'' => 'Select Field Cloneable Group',
+		print_r( $fields );
+		die();
+		$list = [
+				// '' => 'Select Field Cloneable Group',
 		];
 		foreach ( $fields as $field ) {
 			$list[ $field['id'] ] = $field['name'];
@@ -87,24 +99,24 @@ class GroupField {
 
 	/**
 	 * Check Type field group
-	 * @param array $meta_box
-	 * @return boolen $fields
+	 * @param array $fields
+	 * @return array $return_fields fields of type group
 	 */
-	private static function get_field_type_group( $meta_box ) {
-		$fields = [];
+	private static function get_field_type_group( $fields ) {
+		// not field type is group.
+		$is_field_group = array_search( 'group', array_column( $fields, 'type' ) );
+		if ( false === $is_field_group ) {
+			return [];
+		}
 
-		if ( isset( $meta_box['fields'] ) ) {
-			$is_field_group = array_search( 'group', array_column( $meta_box['fields'], 'type' ) );
-			if ( false !== $is_field_group ) {
-				foreach ( $meta_box['fields'] as $key => $field ) {
-					if ( 'group' === $field['type'] && isset( $field['clone'] ) && true === $field['clone'] ) {
-						$fields[] = $field;
-					}
-				}
+		$return_fields = [];
+		foreach ( $fields as $field ) {
+			if ( 'group' === $field['type'] && isset( $field['clone'] ) && true === $field['clone'] ) {
+				$return_fields[] = $field;
 			}
 		}
 
-		return $fields;
+		return $return_fields;
 	}
 
 	public static function pagination( $options = [] ) {
