@@ -90,7 +90,7 @@ class MBGroup extends Widget_Base {
 			'label' => esc_html__( 'Meta Box Group', 'mb-elementor-integrator' ),
 		]);
 
-		$options = GroupField::get_list_field_group();
+		$options = ( new GroupField() )->get_list_field_group();
 		$this->add_control('field-group', [
 			'label'       => esc_html__( 'Fields Group', 'mb-elementor-integrator' ),
 			'type'        => Controls_Manager::SELECT2,
@@ -111,48 +111,39 @@ class MBGroup extends Widget_Base {
 	 * @access protected
 	 */
 	protected function render() {
-		$post = GroupField::get_current_post();
+		$group_fields = new GroupField();
+		$post         = $group_fields->get_current_post();
 
 		$data_groups = [];
+		$data_column = [];
 
 		$settings = $this->get_settings_for_display();
 		if ( isset( $settings['field-group'] ) && ! empty( $settings['field-group'] ) ) {
 			$data_groups = rwmb_get_value( $settings['field-group'], [], $post->ID );
+
+			$fields      = $group_fields->get_field_group( $settings['field-group'] );
+			$data_column = array_combine( array_column( $fields['fields'], 'id' ), $fields['fields'] );
 		}
 
-		$data_column = [];
-		if ( ! empty( $settings['map-field-group'] ) ) {
-			$fields = GroupField::get_field_group( $settings['field-group'] );
-
-			foreach ( $settings['map-field-group'] as $column ) {
-				$subfield = explode( ':', $column['subfield'] )[1];
-				$field    = array_search( $subfield, array_column( $fields['fields'], 'id' ) );
-
-				$data_column[] = [
-					'type'      => $fields['fields'][ $field ]['type'],
-					'field'     => $subfield,
-					'text_link' => $column['display_text_for_link'],
-				];
-			}
-		}
-
-		 print_r( $data_groups );
+		// echo "<pre>";
+		// print_r($data_groups);
+		// echo "</pre>"
 		?>
-<!--        <div class="mbei-loop-group">
+		<div class="mbei-loop-group">
 			<?php if ( count( $data_groups ) > 0 ) : ?>
-				<div class="mbei-fields">
+				<div class="mbei-fields mb-columns">
 					<?php foreach ( $data_groups as $data_group ) : ?>
 						<div class="field-item mb-column">
-							<?php foreach ( $data_column as $col ) : ?>
-								<div class="mb-subfield-<?= $col['field']; ?>">
-									<?php GroupField::display_field( $data_group[ $col['field'] ], $col ); ?>
+							<?php foreach ( $data_group as $key => $value ) : ?>
+								<div class="mb-subfield-<?= $key; ?>">
+									<?php $group_fields->display_field( $value, $data_column[ $key ] ); ?>
 								</div>
 							<?php endforeach; ?>
 						</div>
 					<?php endforeach; ?>                    
 				</div>
 			<?php endif ?>
-		</div>-->
+		</div>
 		<?php
 	}
 

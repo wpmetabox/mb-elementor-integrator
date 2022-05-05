@@ -48,7 +48,7 @@ class Group extends Condition_Base {
 			$this->register_sub_condition( $condition );
 		}
 
-		$fields = GroupField::get_field_group();
+		$fields = ( new GroupField() )->get_field_group();
 		if ( 0 < count( $fields ) ) {
 			$condition = new MBFields( $fields );
 			$this->register_sub_condition( $condition );
