@@ -73,95 +73,37 @@ class Group_Skin extends Skin_Base {
 	}
 
 	public function render() {
-		$post = GroupField::get_current_post();
+		$group_fields = new GroupField();
+		$post         = $group_fields->get_current_post();
 
 		$data_groups = [];
+		$data_column = [];
 
 		$settings = $this->parent->get_settings_for_display();
-		if ( ! empty( $settings['field-group'] ) ) {
+		if ( isset( $settings['field-group'] ) && ! empty( $settings['field-group'] ) ) {
 			$data_groups = rwmb_get_value( $settings['field-group'], [], $post->ID );
+
+			$fields      = $group_fields->get_field_group( $settings['field-group'] );
+			$data_column = array_combine( array_column( $fields['fields'], 'id' ), $fields['fields'] );
 		}
 
-		// Check Paging
-		if ( 0 < count( $data_groups ) && $settings['mb_limit'] > 0 ) {
-			$page        = isset( $_GET['mb_page'] ) ? intval( $_GET['mb_page'] ) : 1;
-			$limit       = intval( $settings['mb_limit'] );
-			$offest      = $limit * ( $page - 1 );
-			$total       = intval( ceil( count( $data_groups ) / $limit ) );
-			$data_groups = array_slice( $data_groups, $offest, $limit );
-		}
-
-		$data_column = [];
-		if ( ! empty( $settings['map-field-group'] ) ) {
-			$fields = GroupField::get_field_group( $settings['field-group'] );
-
-			foreach ( $settings['map-field-group'] as $column ) {
-				$subfield = explode( ':', $column['subfield'] )[1];
-				$field    = array_search( $subfield, array_column( $fields['fields'], 'id' ) );
-
-				$data_column[] = [
-					'type'      => $fields['fields'][ $field ]['type'],
-					'field'     => $subfield,
-					'text_link' => $column['display_text_for_link'],
-				];
-			}
-		}
-
-		// print_r($data_column);die();
+		// echo "<pre>";
+		// print_r($data_groups);
+		// echo "</pre>"
 		?>
 		<div class="mbei-loop-group">
-			<?php
-			if ( 'yes' === $settings['mb_title_list_show'] ) {
-				printf( '<%s style="text-align:%s" class="mb_title_typography">%s</%s>', $settings['mb_title_tag'], esc_attr( $settings['title_align'] ), $settings['mb_title_list'], $settings['mb_title_tag'] );
-			}
-			?>
-
 			<?php if ( count( $data_groups ) > 0 ) : ?>
-				<div class="mbei-fields <?= $settings['mb_type_list'] ?>">
-					<?php if ( 'mb-columns' === $settings['mb_type_list'] ) : ?>
-						<?php foreach ( $data_groups as $data_group ) : ?>
-							<div class="field-item mb-column">
-								<?php foreach ( $data_column as $col ) : ?>
-									<div class="mb-subfield-<?= $col['field']; ?>">
-										<?php GroupField::display_field( $data_group[ $col['field'] ], $col ); ?>
-									</div>
-								<?php endforeach; ?>
-							</div>
-						<?php endforeach; ?>                    
-					<?php else : ?>
-						<table>
-							<thead>
-								<tr>
-									<?php foreach ( $data_column as $col ) : ?>
-										<th class="mb-subfield-title-<?= $col['field']; ?>"><?= ucfirst( $col['field'] ) ?></th>
-									<?php endforeach; ?>
-								</tr>
-							</thead>
-							<tbody>
-								<?php foreach ( $data_groups as $data_group ) : ?>
-									<tr>
-										<?php foreach ( $data_column as $col ) : ?>
-											<td class="mb-subfield-<?= $col['field']; ?>"><?= $data_group[ $col['field'] ]; ?></td>
-										<?php endforeach; ?>
-									</tr>
-								<?php endforeach; ?>   
-							</tbody>
-						</table>
-					<?php endif ?>
+				<div class="mbei-fields mb-columns">
+					<?php foreach ( $data_groups as $data_group ) : ?>
+						<div class="field-item mb-column">
+							<?php foreach ( $data_group as $key => $value ) : ?>
+								<div class="mb-subfield-<?= $key; ?>">
+									<?php $group_fields->display_field( $value, $data_column[ $key ] ); ?>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					<?php endforeach; ?>                    
 				</div>
-
-				<?php
-				if ( ! empty( $settings['mb_pagination'] ) && isset( $total ) && 1 < $total ) {
-					GroupField::pagination([
-						'page'      => $page,
-						'limit'     => $limit,
-						'total'     => $total,
-						'type'      => $settings['mb_pagination'],
-						'text_prev' => $settings['mb_pagination_prev'],
-						'text_next' => $settings['mb_pagination_next'],
-					]);
-				}
-				?>
 			<?php endif ?>
 		</div>
 		<?php
