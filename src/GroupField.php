@@ -74,7 +74,7 @@ class GroupField {
 			if ( in_array( $field['id'], $list ) ) {
 				continue;
 			}
-			$list[ $field['id'] ] = ( 'Entry {#}' !== $field['group_title'] ) ? $field['group_title'] : $field['name'];
+			$list[ $field['id'] ] = !empty($field['name']) ? $field['name'] : $field['group_title'];
 		}
 		return $list;
 	}

@@ -15,7 +15,7 @@ class Group_Skin extends Skin_Base {
 	use Skin;
 
 	public function get_title() {
-		return __( 'Metabox Group Skin', 'mb-elementor-integrator' );
+		return __( 'Meta Box Group Skin', 'mb-elementor-integrator' );
 	}
 
 	public function get_id() {

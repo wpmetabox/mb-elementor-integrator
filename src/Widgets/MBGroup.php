@@ -45,7 +45,7 @@ class MBGroup extends Widget_Base {
 	 * @return string Widget title.
 	 */
 	public function get_title() {
-		return __( 'Metbox Group', 'mb-elementor-integrator' );
+		return __( 'Meta Box Group', 'mb-elementor-integrator' );
 	}
 
 	/**

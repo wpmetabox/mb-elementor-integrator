@@ -30,7 +30,7 @@ class Group extends Single {
 	}
 
 	public static function get_title() {
-		return __( 'Metabox Group Skin', 'mb-elementor-integrator' );
+		return __( 'Meta Box Group Skin', 'mb-elementor-integrator' );
 	}
 
 	/**

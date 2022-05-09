@@ -30,7 +30,7 @@ class Group {
 		$location_manager->register_location(
 			$this->get_id(),
 			[
-				'label'           => __( 'Metabox Group Skin', 'mb-elementor-integrator' ),
+				'label'           => __( 'Meta Box Group Skin', 'mb-elementor-integrator' ),
 				'multiple'        => true,
 				'edit_in_content' => true,
 			]

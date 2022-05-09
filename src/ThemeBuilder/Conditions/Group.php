@@ -28,7 +28,7 @@ class Group extends Condition_Base {
 	}
 
 	public function get_label() {
-		return __( 'Metabox Group Skin', 'mb-elementor-integrator' );
+		return __( 'Meta Box Group Skin', 'mb-elementor-integrator' );
 	}
 
 	public function get_all_label() {

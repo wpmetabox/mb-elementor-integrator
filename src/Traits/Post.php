@@ -1,12 +1,20 @@
 <?php
 namespace MBEI\Traits;
 
+use Elementor\Plugin;
+use MBEI\GroupField;
+
 trait Post {
 	public function get_group() {
 		return 'post';
 	}
 
 	private function get_option_groups() {
+		$template = Plugin::instance()->documents->get_current()->get_type();
+		if ( 'metabox_group_template' === $template ) {
+			return $this->get_option_field_group();
+		}
+
 		$groups = [
 			0 => [
 				'options' => [
@@ -24,24 +32,7 @@ trait Post {
 				continue;
 			}
 			foreach ( $list as $field ) {
-				if ( 'group' !== $field['type'] ) {
-					$options[ "{$post_type}:{$field['id']}" ] = $field['name'] ?: $field['id'];
-				} else {
-					if ( empty( $field['fields'] ) ) {
-						continue;
-					}
-
-					$child_options = [];
-					foreach ( $field['fields'] as $key => $subfield ) {
-						$child_options[ "{$field['id']}:{$subfield['id']}" ] = $subfield['name'] ?: $subfield['id'];
-					}
-					$label      = 'Entry {#}' !== $field['group_title'] ? $field['group_title'] : $field['name'];
-					$label_slug = str_replace( '', '-', $label );
-					$child_groups[ "{$field['id']}-{$label_slug}" ] = [
-						'label'   => $label,
-						'options' => $child_options,
-					];
-				}
+				$options[ "{$post_type}:{$field['id']}" ] = $field['name'] ?: $field['id'];
 			}
 			$groups[] = [
 				'label'   => $post_type_object->labels->singular_name,
@@ -49,16 +40,37 @@ trait Post {
 			];
 		}
 
-		if ( ! isset( $child_groups ) || 0 === count( $child_groups ) ) {
+		return $groups;
+	}
+
+	private function get_option_field_group() {
+		$groups[] = [
+			'label'   => __( '-- Meta Box Field Group --', 'mb-elementor-integrator' ),
+			'options' => [],
+		];
+
+		$group_field = new GroupField();
+		$fields      = $group_field->get_field_group();
+
+		if ( 0 === count( $fields ) ) {
 			return $groups;
 		}
 
-		$groups[] = [
-			'label'   => __( '-- Metabox Field Group --', 'mb-elementor-integrator' ),
-			'options' => [],
-		];
-		foreach ( $child_groups as $child_group ) {
-			$groups[] = $child_group;
+		foreach ( $fields as $field ) {
+			if ( empty( $field['fields'] ) ) {
+				continue;
+			}
+
+			$child_options = [];
+			foreach ( $field['fields'] as $key => $subfield ) {
+				$child_options[ "{$field['id']}:{$subfield['id']}" ] = $subfield['name'] ?: $subfield['id'];
+			}
+			$label                                    = ! empty( $field['name'] ) ? $field['name'] : $field['group_title'];
+			$label_slug                               = str_replace( '', '-', $label );
+			$groups[ "{$field['id']}-{$label_slug}" ] = [
+				'label'   => $label,
+				'options' => $child_options,
+			];
 		}
 
 		return $groups;
