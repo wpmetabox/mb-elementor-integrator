@@ -3,13 +3,10 @@
 }
 
 .mbei-loop-group .mbei-fields.mb-columns{
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    display: grid;
 }
 .mbei-loop-group .mbei-fields.mb-columns .mb-column{
-    padding: 0 20px 20px 20px;
-    width: calc(100% / 3);
+
 }
 
 .mbei-pagination{

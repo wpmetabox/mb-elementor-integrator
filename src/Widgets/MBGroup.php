@@ -6,7 +6,6 @@ use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
 use Elementor\Group_Control_Typography;
 use MBEI\GroupField;
-use Elementor\Repeater;
 
 class MBGroup extends Widget_Base {
 
@@ -97,6 +96,18 @@ class MBGroup extends Widget_Base {
 			'label_block' => true,
 			'options'     => $options,
 			'default'     => key( $options ),
+		]);
+
+		$this->add_responsive_control('mb_column', [
+			'label'           => __( 'Columns', 'mb-elementor-integrator' ),
+			'type'            => Controls_Manager::NUMBER,
+			'devices'         => [ 'desktop', 'tablet', 'mobile' ],
+			'desktop_default' => 3,
+			'tablet_default'  => 2,
+			'mobile_default'  => 1,
+			'selectors'       => [
+				'{{WRAPPER}} .mb-columns' => 'grid-template-columns: repeat({{SIZE}}, 1fr);',
+			],
 		]);
 
 		$this->end_controls_section();
