@@ -101,7 +101,14 @@ class GroupField {
 		return $return_fields;
 	}
 
-	public function display_field( $data, $field = [] ) {
+	public static function change_url_ssl( $url ) {
+		if ( is_ssl() && false === strpos( $url, 'https' ) ) {
+			return str_replace( 'http', 'https', $url );
+		}
+		return $url;
+	}
+
+	public function display_field( $data, $field = [], $return = false ) {
 		$file_type = 'text';
 		switch ( $field['type'] ) {
 			case 'text':

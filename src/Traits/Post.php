@@ -81,7 +81,7 @@ trait Post {
 		$valueField = rwmb_get_value( $post_type );
 		if ( 0 < count( $valueField ) ) {
 			$image_id = array_shift( $valueField )[ $field_id ];
-			$image    = wp_get_attachment_image_src( $image_id );
+			$image    = wp_get_attachment_image_src( $image_id, 'full' );
 			return [
 				'ID'       => $image_id,
 				'full_url' => $image[0],
