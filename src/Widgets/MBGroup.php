@@ -110,6 +110,18 @@ class MBGroup extends Widget_Base {
 			],
 		]);
 
+		$this->add_responsive_control('mb_spacing', [
+			'label'           => __( 'Spacing Item (px)', 'mb-elementor-integrator' ),
+			'type'            => Controls_Manager::NUMBER,
+			'devices'         => [ 'desktop', 'tablet', 'mobile' ],
+			'desktop_default' => 20,
+			'tablet_default'  => 20,
+			'mobile_default'  => 10,
+			'selectors'       => [
+				'{{WRAPPER}} .mb-columns' => 'column-gap: {{SIZE}}px;',
+			],
+		]);
+
 		$this->end_controls_section();
 	}
 

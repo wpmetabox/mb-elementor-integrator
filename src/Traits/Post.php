@@ -10,8 +10,8 @@ trait Post {
 	}
 
 	private function get_option_groups() {
-		$template = Plugin::instance()->documents->get_current()->get_type();
-		if ( 'metabox_group_template' === $template ) {
+		$document = Plugin::instance()->documents->get_current();
+		if ( ! empty( $document ) && 'metabox_group_template' === $document->get_type() ) {
 			return $this->get_option_field_group();
 		}
 
