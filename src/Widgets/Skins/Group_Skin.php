@@ -31,7 +31,7 @@ class Group_Skin extends Skin_Base {
 
 		$this->parent = $widget;
 
-		$this->add_control('mb_skin_template', [
+		$this->add_control( 'mb_skin_template', [
 			'label'       => __( 'Select a Group Skin', 'mb-elementor-integrator' ),
 			'description' => '<div style="text-align:center;"><a target="_blank" style="text-align: center;font-style: normal;" href="' . esc_url( admin_url( '/edit.php?post_type=elementor_library&tabs_group=theme&elementor_library_type=metabox_group_template' ) ) .
 			'" class="elementor-button elementor-button-default elementor-repeater-add">' .
@@ -40,9 +40,7 @@ class Group_Skin extends Skin_Base {
 			'label_block' => true,
 			'default'     => [],
 			'options'     => $this->get_skin_template(),
-		]);
-
-		$this->remove_control( 'map-field-group' );
+		] );
 
 		$this->register_divider_controls();
 	}
@@ -148,12 +146,11 @@ class Group_Skin extends Skin_Base {
 	}
 
 	private function render_header() {
-		return '<div class="mbei-loop-group">'
-				. '<div class="mbei-fields mb-columns">';
+		return '<div class="mbei-fields mb-columns">';
 	}
 
 	private function render_footer() {
-		return '</div></div>';
+		return '</div>';
 	}
 
 	protected function render_loop_header() {
@@ -179,6 +176,10 @@ class Group_Skin extends Skin_Base {
 		$data_groups = rwmb_get_value( $settings['field-group'], [], $post->ID );
 		if ( 0 === count( $data_groups ) ) {
 			return;
+		}
+
+		if ( false === is_int( key( $data_groups ) ) ) {
+			$data_groups = [ $data_groups ];
 		}
 
 		$fields      = $group_fields->get_field_group( $settings['field-group'] );

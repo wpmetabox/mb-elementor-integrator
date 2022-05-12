@@ -89,10 +89,13 @@ trait Post {
 			return rwmb_meta( $field_id );
 		}
 
-		$field      = rwmb_get_field_settings( $post_type, array(), null );
+		$field      = rwmb_get_field_settings( $post_type, [], null );
 		$valueField = rwmb_get_value( $post_type );
 		if ( 0 < count( $valueField ) ) {
-			$image_id = array_shift( $valueField )[ $field_id ];
+			if ( true === is_int( key( $valueField ) ) ) {
+				$valueField = array_shift( $valueField );
+			}
+			$image_id = $valueField[ $field_id ];
 			$image    = wp_get_attachment_image_src( $image_id, 'full' );
 			return [
 				'ID'       => $image_id,
@@ -115,7 +118,10 @@ trait Post {
 			$valueField = rwmb_get_value( $post_type );
 
 			if ( 0 < count( $valueField ) ) {
-				echo array_shift( $valueField )[ $field_id ];
+				if ( true === is_int( key( $valueField ) ) ) {
+					$valueField = array_shift( $valueField );
+				}
+				echo $valueField[ $field_id ];
 			}
 		} else {
 			$field = rwmb_get_field_settings( $field_id, array(), null );

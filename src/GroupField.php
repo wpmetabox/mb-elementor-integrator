@@ -11,8 +11,8 @@ class GroupField {
 			return $post;
 		}
 
-		list($post_type, $slug) = explode( '/', $wp_query->query['pagename'] );
-		$current_post           = get_page_by_path( $slug, OBJECT, $post_type );
+		list( $post_type, $slug ) = explode( '/', $wp_query->query['pagename'] );
+		$current_post             = get_page_by_path( $slug, OBJECT, $post_type );
 		return $current_post;
 	}
 
@@ -51,11 +51,7 @@ class GroupField {
 						continue;
 					}
 
-					if ( ! empty( $key ) && $key === $group_field['id'] ) {
-						array_push( $return_fields, $group_field );
-					} else {
-						array_push( $return_fields, $group_field );
-					}
+					array_push( $return_fields, $group_field );
 				}
 			}
 		}
@@ -74,7 +70,7 @@ class GroupField {
 			if ( in_array( $field['id'], $list ) ) {
 				continue;
 			}
-			$list[ $field['id'] ] = !empty($field['name']) ? $field['name'] : $field['group_title'];
+			$list[ $field['id'] ] = ! empty( $field['name'] ) ? $field['name'] : $field['group_title'];
 		}
 		return $list;
 	}
@@ -93,7 +89,7 @@ class GroupField {
 
 		$return_fields = [];
 		foreach ( $fields as $field ) {
-			if ( 'group' === $field['type'] && isset( $field['clone'] ) && true === $field['clone'] ) {
+			if ( 'group' === $field['type'] ) {
 				$return_fields[] = $field;
 			}
 		}
@@ -109,7 +105,7 @@ class GroupField {
 	}
 
 	public function display_field( $data, $field = [], $return = false ) {
-		$file_type = 'text';
+
 		switch ( $field['type'] ) {
 			case 'text':
 			case 'textarea':
@@ -128,7 +124,7 @@ class GroupField {
 				$file_type = 'image';
 				break;
 			default:
-				$file_type = $type;
+				$file_type = 'text';
 				break;
 		}
 

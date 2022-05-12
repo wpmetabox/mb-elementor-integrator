@@ -11,12 +11,6 @@ class MBGroup extends Widget_Base {
 
 	public function __construct( $data = [], $args = null ) {
 		parent::__construct( $data, $args );
-
-		wp_register_style( 'style-mb-group', plugin_dir_url( __DIR__ ) . 'assets/css/mb-group.css', [], RWMB_VER );
-	}
-
-	public function get_style_depends() {
-		return [ 'style-mb-group' ];
 	}
 
 	/**
@@ -85,20 +79,20 @@ class MBGroup extends Widget_Base {
 	 */
 	public function register_controls() {
 
-		$this->start_controls_section('section_metabox', [
+		$this->start_controls_section( 'section_metabox', [
 			'label' => esc_html__( 'Meta Box Group', 'mb-elementor-integrator' ),
-		]);
+		] );
 
 		$options = ( new GroupField() )->get_list_field_group();
-		$this->add_control('field-group', [
+		$this->add_control( 'field-group', [
 			'label'       => esc_html__( 'Fields Group', 'mb-elementor-integrator' ),
 			'type'        => Controls_Manager::SELECT2,
 			'label_block' => true,
 			'options'     => $options,
 			'default'     => key( $options ),
-		]);
+		] );
 
-		$this->add_responsive_control('mb_column', [
+		$this->add_responsive_control( 'mb_column', [
 			'label'           => __( 'Columns', 'mb-elementor-integrator' ),
 			'type'            => Controls_Manager::NUMBER,
 			'devices'         => [ 'desktop', 'tablet', 'mobile' ],
@@ -106,11 +100,11 @@ class MBGroup extends Widget_Base {
 			'tablet_default'  => 2,
 			'mobile_default'  => 1,
 			'selectors'       => [
-				'{{WRAPPER}} .mb-columns' => 'grid-template-columns: repeat({{SIZE}}, 1fr);',
+				'{{WRAPPER}} .mb-columns' => 'display: grid; grid-template-columns: repeat({{SIZE}}, 1fr);',
 			],
-		]);
+		] );
 
-		$this->add_responsive_control('mb_spacing', [
+		$this->add_responsive_control( 'mb_spacing', [
 			'label'           => __( 'Spacing Item (px)', 'mb-elementor-integrator' ),
 			'type'            => Controls_Manager::NUMBER,
 			'devices'         => [ 'desktop', 'tablet', 'mobile' ],
@@ -118,9 +112,9 @@ class MBGroup extends Widget_Base {
 			'tablet_default'  => 20,
 			'mobile_default'  => 10,
 			'selectors'       => [
-				'{{WRAPPER}} .mb-columns' => 'column-gap: {{SIZE}}px;',
+				'{{WRAPPER}} .mb-columns' => 'gap: {{SIZE}}px;',
 			],
-		]);
+		] );
 
 		$this->end_controls_section();
 	}
@@ -141,33 +135,37 @@ class MBGroup extends Widget_Base {
 		$data_column = [];
 
 		$settings = $this->get_settings_for_display();
-		if ( isset( $settings['field-group'] ) && ! empty( $settings['field-group'] ) ) {
-			$data_groups = rwmb_get_value( $settings['field-group'], [], $post->ID );
-
-			$fields      = $group_fields->get_field_group( $settings['field-group'] );
-			$data_column = array_combine( array_column( $fields['fields'], 'id' ), $fields['fields'] );
+		if ( ! isset( $settings['field-group'] ) || empty( $settings['field-group'] ) ) {
+			return;
 		}
 
-		// echo "<pre>";
-		// print_r($data_groups);
-		// echo "</pre>"
-		?>
-		<div class="mbei-loop-group">
-			<?php if ( count( $data_groups ) > 0 ) : ?>
-				<div class="mbei-fields mb-columns">
-					<?php foreach ( $data_groups as $data_group ) : ?>
-						<div class="field-item mb-column">
-							<?php foreach ( $data_group as $key => $value ) : ?>
-								<div class="mb-subfield-<?= $key; ?>">
-									<?php $group_fields->display_field( $value, $data_column[ $key ] ); ?>
-								</div>
-							<?php endforeach; ?>
-						</div>
-					<?php endforeach; ?>                    
-				</div>
-			<?php endif ?>
-		</div>
-		<?php
+		$data_groups = rwmb_get_value( $settings['field-group'], [], $post->ID );
+		if ( 0 === count( $data_groups ) ) {
+			return;
+		}
+
+		if ( false === is_int( key( $data_groups ) ) ) {
+			$data_groups = [ $data_groups ];
+		}
+
+		$fields      = $group_fields->get_field_group( $settings['field-group'] );
+		$data_column = array_combine( array_column( $fields['fields'], 'id' ), $fields['fields'] );
+
+		if ( count( $data_groups ) > 0 ) {
+			?>
+			<div class="mbei-fields mb-columns">
+				<?php foreach ( $data_groups as $data_group ) : ?>
+					<div class="field-item mb-column">
+						<?php foreach ( $data_group as $key => $value ) : ?>
+							<div class="mb-subfield-<?= $key; ?>">
+								<?php $group_fields->display_field( $value, $data_column[ $key ] ); ?>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php endforeach; ?>                    
+			</div>
+			<?php
+		}
 	}
 
 	protected function content_template() {

@@ -27,7 +27,7 @@ class MBFields extends Condition_Base {
 	}
 
 	public function get_label() {
-		return 'Metabox Field';
+		return 'Meta Box Field';
 	}
 
 	public function get_all_label() {
