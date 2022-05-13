@@ -25,7 +25,7 @@ class Loader {
 	}
 
 	public function modules() {
-		new \MBEI\GroupField();
+		new GroupField();
 	}
 
 	private function is_valid() {
@@ -36,16 +36,16 @@ class Loader {
 	}
 
 	public function register_conditions( $conditions_manager ) {
-		$conditions_manager->get_condition( 'general' )->register_sub_condition( new \MBEI\ThemeBuilder\Conditions\Group() );
+		$conditions_manager->get_condition( 'general' )->register_sub_condition( new ThemeBuilder\Conditions\Group() );
 	}
 
 	public function register_locations() {
-		new \MBEI\Widgets\Locations\Group();
+		new Widgets\Locations\Group();
 	}
 
 	public function register_widgets() {
 		add_action('elementor/widgets/register', function( $widgets_manager ) {
-			$widgets_manager->register( new \MBEI\Widgets\MBGroup() );
+			$widgets_manager->register( new Widgets\MBGroup() );
 		});
 	}
 
@@ -82,7 +82,7 @@ class Loader {
 
 		// Add a custom skin for the POSTS widget
 		add_action('elementor/widget/metabox-group/skins_init', function( $widget ) {
-			$widget->add_skin( new \MBEI\Widgets\GroupSkin( $widget ) );
+			$widget->add_skin( new Widgets\GroupSkin( $widget ) );
 		});
 	}
 
