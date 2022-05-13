@@ -1,6 +1,7 @@
 <?php
+namespace MBEI;
 
-class MBEI_Loader {
+class Loader {
 
 	public function __construct() {
 
@@ -35,7 +36,7 @@ class MBEI_Loader {
 	}
 
 	public function register_conditions( $conditions_manager ) {
-		$conditions_manager->get_condition( 'general' )->register_sub_condition( new MBEI\ThemeBuilder\Conditions\Group() );
+		$conditions_manager->get_condition( 'general' )->register_sub_condition( new \MBEI\ThemeBuilder\Conditions\Group() );
 	}
 
 	public function register_locations() {
@@ -44,7 +45,7 @@ class MBEI_Loader {
 
 	public function register_widgets() {
 		add_action('elementor/widgets/register', function( $widgets_manager ) {
-			$widgets_manager->register( new MBEI\Widgets\MBGroup() );
+			$widgets_manager->register( new \MBEI\Widgets\MBGroup() );
 		});
 	}
 
@@ -81,7 +82,7 @@ class MBEI_Loader {
 
 		// Add a custom skin for the POSTS widget
 		add_action('elementor/widget/metabox-group/skins_init', function( $widget ) {
-			$widget->add_skin( new MBEI\Widgets\Skins\Group_Skin( $widget ) );
+			$widget->add_skin( new \MBEI\Widgets\Skins\Group_Skin( $widget ) );
 		});
 	}
 

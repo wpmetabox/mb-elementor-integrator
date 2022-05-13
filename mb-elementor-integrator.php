@@ -19,8 +19,6 @@ if ( file_exists( __DIR__ . '/vendor' ) ) {
 	require __DIR__ . '/vendor/autoload.php';
 }
 
-require plugin_dir_path( __FILE__ ) . 'src/loader.php';
-
-if ( class_exists( 'MBEI_Loader' ) ) {
-	new MBEI_Loader();
+if ( class_exists( 'MBEI\Loader' ) ) {
+	new \MBEI\Loader();
 }
