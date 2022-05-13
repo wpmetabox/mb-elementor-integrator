@@ -82,7 +82,7 @@ class Loader {
 
 		// Add a custom skin for the POSTS widget
 		add_action('elementor/widget/metabox-group/skins_init', function( $widget ) {
-			$widget->add_skin( new \MBEI\Widgets\Skins\Group_Skin( $widget ) );
+			$widget->add_skin( new \MBEI\Widgets\GroupSkin( $widget ) );
 		});
 	}
 

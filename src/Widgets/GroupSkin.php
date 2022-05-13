@@ -1,6 +1,6 @@
 <?php
 
-namespace MBEI\Widgets\Skins;
+namespace MBEI\Widgets;
 
 use Elementor\Widget_Base;
 use ElementorPro\Modules\Posts\Skins\Skin_Base;
@@ -10,7 +10,7 @@ use MBEI\GroupField;
 use Elementor\Plugin;
 use Elementor\Core\DynamicTags\Manager;
 
-class Group_Skin extends Skin_Base {
+class GroupSkin extends Skin_Base {
 
 	use Skin;
 
@@ -46,26 +46,26 @@ class Group_Skin extends Skin_Base {
 	}
 
 	private function get_skin_template() {
-		global $wpdb;
 
 		$cache_key = 'mbei_skin_template';
 		$templates = wp_cache_get( $cache_key );
 		if ( false === $templates ) {
-			$templates = $wpdb->get_results(
-				"SELECT $wpdb->term_relationships.object_id as ID, $wpdb->posts.post_title as post_title FROM $wpdb->term_relationships
-							INNER JOIN $wpdb->term_taxonomy ON
-								$wpdb->term_relationships.term_taxonomy_id=$wpdb->term_taxonomy.term_taxonomy_id
-							INNER JOIN $wpdb->terms ON
-								$wpdb->term_taxonomy.term_id=$wpdb->terms.term_id AND $wpdb->terms.slug='metabox_group_template'
-							INNER JOIN $wpdb->posts ON
-								$wpdb->term_relationships.object_id=$wpdb->posts.ID
-				WHERE  $wpdb->posts.post_status='publish'"
-			);
-
+			$templates = get_posts( [
+				'post_type'   => 'elementor_library',
+				'numberposts' => -1,
+				'post_status' => 'publish',
+				'tax_query'   => array(
+					array(
+						'taxonomy' => 'elementor_library_type',
+						'field'    => 'slug',
+						'terms'    => 'metabox_group_template',
+					),
+				),
+			] );
 			wp_cache_set( $cache_key, $templates );
 		}
 
-		$options = [ 0 => 'Select a template' ];
+		$options = [ 0 => __( 'Select a template', 'mb-elementor-integrator' ) ];
 		foreach ( $templates as $template ) {
 			$options[ $template->ID ] = $template->post_title;
 		}
@@ -105,20 +105,20 @@ class Group_Skin extends Skin_Base {
 			// Chek $dynamic_tag is array.
 			if ( is_array( $dynamic_tag ) ) {
 				$data_replace = array_merge( $data_replace, $this->dynamic_tag_to_data( $dynamic_tag, $dynamic_tags_mageger ) );
+				continue;
+			}
+			// Check $dynamic_tag is dynamic tag meta box.
+			$tag_data = $dynamic_tags_mageger->tag_text_to_tag_data( $dynamic_tag );
+			if ( false === strpos( $tag_data['name'], 'meta-box-' ) ) {
+				continue;
+			}
+			// Get tag content.
+			$tag_data_content = $dynamic_tags_mageger->get_tag_data_content( $tag_data['id'], $tag_data['name'], $tag_data['settings'] );
+			$key              = explode( ':', $tag_data['settings']['key'] )[1];
+			if ( isset( $tag_data_content['url'] ) ) {
+				$data_replace[ $key ] = GroupField::change_url_ssl( $tag_data_content['url'] );
 			} else {
-				// Check $dynamic_tag is dynamic tag meta box.
-				$tag_data = $dynamic_tags_mageger->tag_text_to_tag_data( $dynamic_tag );
-				if ( false === strpos( $tag_data['name'], 'meta-box-' ) ) {
-					continue;
-				}
-				// Get tag content.
-				$tag_data_content = $dynamic_tags_mageger->get_tag_data_content( $tag_data['id'], $tag_data['name'], $tag_data['settings'] );
-				$key              = explode( ':', $tag_data['settings']['key'] )[1];
-				if ( isset( $tag_data_content['url'] ) ) {
-					$data_replace[ $key ] = GroupField::change_url_ssl( $tag_data_content['url'] );
-				} else {
-					$data_replace[ $key ] = $tag_data_content;
-				}
+				$data_replace[ $key ] = $tag_data_content;
 			}
 		}
 		return $data_replace;
