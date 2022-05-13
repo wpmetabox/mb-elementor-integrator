@@ -1,6 +1,6 @@
 <?php
 
-namespace MBEI\Widgets\Locations;
+namespace MBEI\Widgets;
 
 use ElementorPro\Modules\ThemeBuilder\Documents\Theme_Document;
 use ElementorPro\Modules\ThemeBuilder\Documents\Loop;
@@ -9,7 +9,7 @@ use MBEI\ThemeBuilder\Documents\Group as Group_Document;
 use Elementor\Plugin;
 use Exception;
 
-class Group {
+class GroupLocation {
 
 	use Location;
 

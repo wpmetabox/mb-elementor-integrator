@@ -40,7 +40,7 @@ class Loader {
 	}
 
 	public function register_locations() {
-		new Widgets\Locations\Group();
+		new Widgets\GroupLocation();
 	}
 
 	public function register_widgets() {
