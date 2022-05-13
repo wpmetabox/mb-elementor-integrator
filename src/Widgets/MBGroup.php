@@ -100,7 +100,7 @@ class MBGroup extends Widget_Base {
 			'tablet_default'  => 2,
 			'mobile_default'  => 1,
 			'selectors'       => [
-				'{{WRAPPER}} .mb-columns' => 'display: grid; grid-template-columns: repeat({{SIZE}}, 1fr);',
+				'{{WRAPPER}} .mbei-groups' => 'display: grid; grid-template-columns: repeat({{SIZE}}, 1fr);',
 			],
 		] );
 
@@ -112,7 +112,7 @@ class MBGroup extends Widget_Base {
 			'tablet_default'  => 20,
 			'mobile_default'  => 10,
 			'selectors'       => [
-				'{{WRAPPER}} .mb-columns' => 'gap: {{SIZE}}px;',
+				'{{WRAPPER}} .mbei-groups' => 'gap: {{SIZE}}px;',
 			],
 		] );
 
@@ -153,11 +153,11 @@ class MBGroup extends Widget_Base {
 
 		if ( count( $data_groups ) > 0 ) {
 			?>
-			<div class="mbei-fields mb-columns">
+			<div class="mbei-groups">
 				<?php foreach ( $data_groups as $data_group ) : ?>
-					<div class="field-item mb-column">
+					<div class="mbei-group">
 						<?php foreach ( $data_group as $key => $value ) : ?>
-							<div class="mb-subfield-<?= $key; ?>">
+							<div class="mbei-subfield mbei-subfield--<?= $key; ?>">
 								<?php $group_fields->display_field( $value, $data_column[ $key ] ); ?>
 							</div>
 						<?php endforeach; ?>

@@ -146,7 +146,7 @@ class Group_Skin extends Skin_Base {
 	}
 
 	private function render_header() {
-		return '<div class="mbei-fields mb-columns">';
+		return '<div class="mbei-groups">';
 	}
 
 	private function render_footer() {
@@ -154,7 +154,7 @@ class Group_Skin extends Skin_Base {
 	}
 
 	protected function render_loop_header() {
-		return '<div class="field-item mb-column">';
+		return '<div class="mbei-group">';
 	}
 
 	protected function render_loop_footer() {
@@ -211,9 +211,9 @@ class Group_Skin extends Skin_Base {
 		} else {
 			?>
 			<?php foreach ( $data_groups as $data_group ) : ?>
-				<div class="field-item mb-column">
+				<div class="mbei-group">
 					<?php foreach ( $data_group as $key => $value ) : ?>
-						<div class="mb-subfield-<?= $key; ?>">
+						<div class="mbei-subfield mbei-subfield--<?= $key; ?>">
 							<?php $group_fields->display_field( $value, $data_column[ $key ] ); ?>
 						</div>
 					<?php endforeach; ?>

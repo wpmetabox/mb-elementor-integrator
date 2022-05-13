@@ -107,15 +107,6 @@ class GroupField {
 	public function display_field( $data, $field = [], $return = false ) {
 
 		switch ( $field['type'] ) {
-			case 'text':
-			case 'textarea':
-			case 'number':
-			case 'wysiwyg':
-			case 'email':
-			case 'select':
-			case 'select_advanced':
-				$file_type = 'text';
-				break;
 			case 'image':
 			case 'image_advanced':
 			case 'image_select':
