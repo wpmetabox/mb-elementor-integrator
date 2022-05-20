@@ -173,7 +173,16 @@ class GroupSkin extends Skin_Base {
 			return;
 		}
 
-		$data_groups = rwmb_get_value( $settings['field-group'], [], $post->ID );
+        //check group nested
+        $field_group = (array)$settings['field-group'];
+        if( strpos($settings['field-group'], '.') !== false ) {
+            $field_group = explode( '.', $settings['field-group'] );
+        }
+        
+		$data_groups = rwmb_meta( $field_group[ 0 ], [], $post->ID );
+        array_shift( $field_group );
+        $data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
+
 		if ( 0 === count( $data_groups ) ) {
 			return;
 		}
@@ -189,22 +198,145 @@ class GroupSkin extends Skin_Base {
 		if ( $this->get_instance_value( 'mb_skin_template' ) ) {
 			$content_template = $this->get_template();
 			$cols             = array_keys( $content_template['data'] );
+
+            if (stripos(json_encode($cols),'.') !== false) {
+                $tmp_cols = $group_fields->split_field_nested($cols);
+            }
+            
 			foreach ( $data_groups as $k => $data_group ) {
-				$cols = array_intersect( array_keys( $data_group ), $cols );
-				if ( 0 === count( $cols ) ) {
+				$check_cols = array_intersect( array_keys( $data_group ), isset($tmp_cols) ? $tmp_cols['cols'] : $cols );
+				if ( 0 === count( $check_cols ) ) {
 					continue;
 				}
 
 				$content = $this->render_loop_header() . $content_template['content'] . $this->render_loop_footer();
 				foreach ( $cols as $col ) {
-					if ( isset( $data_group[ $col ] ) ) {
-						ob_start();
-						$group_fields->display_field( $data_group[ $col ], $data_column[ $col ], true );
-						$value = ob_get_contents();
-						ob_end_clean();
+                    if ( !isset( $data_group[ $col ] ) && false === strpos( $col, '.' ) ) {
+                        continue;
+                    }
+                    
+                    if ( false !== strpos( $col, '.' ) ) {
+                        $tmp_col = explode( '.', $col, 2 );
+                        $sub_col = $tmp_col[0];
+                        if ( !isset( $data_group[ $sub_col ] ) ) {
+                            continue;
+                        }
+                        
+                        $data_sub_column = array_combine( array_column( $data_column[ $sub_col ]['fields'], 'id' ), $data_column[ $sub_col ]['fields'] );
+                        $data_sub_column = array_filter($data_sub_column, function($k) use($tmp_col) {
+                            return $k == $tmp_col[1];
+                        }, ARRAY_FILTER_USE_KEY);
+                        
+                        ob_start();
+                        $this->parent->render_nested_group( $data_group[ $sub_col ], $data_sub_column, $group_fields );
+                        $value = ob_get_contents();
+                        ob_end_clean();
+                        
+                        //Display text from sub field group.
+                        if ( !isset( $data_sub_column[ $tmp_col[1] ]['mime_type'] ) || 'image' !== $data_sub_column[ $tmp_col[1] ]['mime_type'] ) {
+                            $content = str_replace( $content_template['data'][ $col ], $value, $content );
+                            continue;
+                        }
+                        
+                        //Display image from sub field group.
+                        $search_data = [];
+                        libxml_use_internal_errors(true);
+                        $dom = new \DOMDocument();
+                        $dom->loadHTML($content);
+                        foreach ( $dom->getElementsByTagName( 'img' ) as $i => $img ) {
+                            if ( false === strpos( $img->getAttribute( 'srcset' ), $content_template['data'][ $col ] ) ) {
+                                continue;
+                            }
+                            $search_data = [
+                                'html' => str_replace( '>', ' />', $dom->saveHTML( $img ) ),
+                                'width' => 'width="'.$img->getAttribute( 'width' ).'"',
+                                'height' => 'height="'.$img->getAttribute( 'height' ).'"',
+                                'class' => 'class="'.$img->getAttribute( 'class' ).'"'
+                            ];
+                        }       
 
-						$content = str_replace( $content_template['data'][ $col ], $value, $content );
-					}
+                        if ( empty( $search_data ) ) {
+                            continue;
+                        }                                               
+                        
+                        //Replace Attribute Image
+                        $domNew = new \DOMDocument();
+                        $domNew->loadHTML($value);
+                        foreach ( $domNew->getElementsByTagName( 'img' ) as $i => $img ) {
+                            $value = str_replace([
+                                'width="'.$img->getAttribute( 'width' ).'"',
+                                'height' => 'height="'.$img->getAttribute( 'height' ).'"',
+                                'class="'.$img->getAttribute( 'class' ).'"'
+                            ], [
+                                $search_data['width'],
+                                $search_data['height'],
+                                $search_data['class']
+                            ], $value);
+                        }
+                        
+                        $content = str_replace( $search_data['html'], $value, $content );
+                        continue;                        
+                    }                    
+                    
+                    //Get content field group
+                    if( is_array( $data_group[ $col ] ) && !empty( $data_group[ $col ] ) ) {
+                        $data_sub_column = array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] );
+                        
+                        ob_start();
+                        $this->parent->render_nested_group( $data_group[ $col ], $data_sub_column, $group_fields );
+                        $value = ob_get_contents();
+                        ob_end_clean(); 
+                        
+                        $content = str_replace( $content_template['data'][ $col ], $value, $content );
+                        continue;                        
+                    }
+                    
+
+//                    if( isset( $data_group[ $col ] ) && is_array( $data_group[ $col ] ) && !empty( $data_group[ $col ] ) ) {
+//                        $data_column[ $col ]['fields'] = array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] );
+//                        
+//                        if ( isset( $tmp_cols ) ) {
+//                            if ( isset( $tmp_cols['sub_cols'][ $col ] ) && count( $data_column[ $col ]['fields'] ) !== count( $tmp_cols['sub_cols'][ $col ] ) ) {
+//                                foreach ( $data_column[ $col ]['fields'] as $k => $v ) {
+//                                    if ( in_array( $k, $tmp_cols['sub_cols'][ $col ] ) ){
+//                                        continue;
+//                                    }
+//                                    unset( $data_column[ $col ]['fields'][ $k ] );
+//                                }
+//                            }
+//                        }                       
+//
+//                        ob_start();
+//                        $this->parent->render_nested_group( $data_group[ $col ], $data_column[ $col ]['fields'], $group_fields );
+//                        $value = ob_get_contents();
+//                        ob_end_clean();
+//                        
+//                        if ( !isset( $tmp_cols ) ) {
+//                            $content = str_replace( $content_template['data'][ $col ], $value, $content );
+//                            continue;
+//                        }
+//                        
+//                        print_r($content_template['data'][ $col ]);die();
+//                        
+//                        if ( !isset( $tmp_cols['sub_cols'][ $col ] ) ) {
+//                            continue;
+//                        }
+//                        
+//                        foreach ( $tmp_cols['sub_cols'][ $col ] as $k => $v ) {
+//                            if ( !isset( $content_template['data'][ "$col.$v" ] ) ){
+//                                continue;
+//                            }
+//                            $content = str_replace( $content_template['data'][ "$col.$v" ], $value, $content );
+//                        }
+//                        continue;
+//                    }                    
+
+                    ob_start();
+                    $group_fields->display_field( $data_group[ $col ], $data_column[ $col ], true );
+                    $value = ob_get_contents();
+                    ob_end_clean();
+
+                    $content = str_replace( $content_template['data'][ $col ], $value, $content );
 				}
 				echo $content;
 			}
@@ -214,7 +346,14 @@ class GroupSkin extends Skin_Base {
 				<div class="mbei-group">
 					<?php foreach ( $data_group as $key => $value ) : ?>
 						<div class="mbei-subfield mbei-subfield--<?= $key; ?>">
-							<?php $group_fields->display_field( $value, $data_column[ $key ] ); ?>
+                            <?php
+                                if( is_array( $value ) && !empty( $value ) ) {
+                                    $data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
+                                    $this->parent->render_nested_group( $value, $data_column[ $key ]['fields'], $group_fields );
+                                    continue;
+                                }
+                                $group_fields->display_field( $value, $data_column[ $key ] );
+                            ?>
 						</div>
 					<?php endforeach; ?>
 				</div>

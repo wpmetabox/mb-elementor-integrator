@@ -119,6 +119,31 @@ class MBGroup extends Widget_Base {
 		$this->end_controls_section();
 	}
 
+	public function render_nested_group( $data_groups, $data_column, $group_fields ) {
+		if ( false === is_int( key( $data_groups ) ) ) {
+			$data_groups = [ $data_groups ];
+		}
+
+		foreach ( $data_groups as $data_group ) {
+			echo '<div class="mbei-group mbei-group-nested">';
+			foreach ( $data_group as $key => $value ) {
+				if ( ! isset( $data_column[ $key ] ) ) {
+					continue;
+				}
+
+				echo '<div class="mbei-subfield mbei-subfield--' . $key . '">';
+				if ( is_array( $value ) && ! empty( $value ) ) {
+					$data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
+					$this->render_nested_group( $value, $data_column[ $key ]['fields'], $group_fields );
+					continue;
+				}
+					$group_fields->display_field( $value, $data_column[ $key ] );
+				echo '</div>';
+			}
+			echo '</div>';
+		}
+	}
+
 	/**
 	 * Render Term List widget output on the frontend.
 	 *
@@ -139,7 +164,16 @@ class MBGroup extends Widget_Base {
 			return;
 		}
 
-		$data_groups = rwmb_get_value( $settings['field-group'], [], $post->ID );
+		// check group nested
+		$field_group = (array) $settings['field-group'];
+		if ( strpos( $settings['field-group'], '.' ) !== false ) {
+			$field_group = explode( '.', $settings['field-group'] );
+		}
+
+		$data_groups = rwmb_meta( $field_group[0], [], $post->ID );
+		array_shift( $field_group );
+		$data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
+
 		if ( 0 === count( $data_groups ) ) {
 			return;
 		}
@@ -158,7 +192,14 @@ class MBGroup extends Widget_Base {
 					<div class="mbei-group">
 						<?php foreach ( $data_group as $key => $value ) : ?>
 							<div class="mbei-subfield mbei-subfield--<?= $key; ?>">
-								<?php $group_fields->display_field( $value, $data_column[ $key ] ); ?>
+								<?php
+								if ( is_array( $value ) && ! empty( $value ) ) {
+									$data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
+									$this->render_nested_group( $value, $data_column[ $key ]['fields'], $group_fields );
+									continue;
+								}
+									$group_fields->display_field( $value, $data_column[ $key ] );
+								?>
 							</div>
 						<?php endforeach; ?>
 					</div>

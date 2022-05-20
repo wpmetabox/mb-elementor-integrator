@@ -70,6 +70,16 @@ class GroupField {
 			if ( in_array( $field['id'], $list ) ) {
 				continue;
 			}
+
+			if ( strpos( $field['id'], '.' ) !== false ) {
+				$field_group    = explode( '.', $field['id'] );
+				$is_field_group = array_search( $field_group[0], array_column( $fields, 'id' ) );
+
+				$label_group          = ! empty( $fields[ $is_field_group ]['name'] ) ? $fields[ $is_field_group ]['name'] : $fields[ $is_field_group ]['group_title'];
+				$list[ $field['id'] ] = ( ! empty( $field['name'] ) ? $field['name'] : $field['group_title'] ) . ' ( ' . $label_group . ' )';
+				continue;
+			}
+
 			$list[ $field['id'] ] = ! empty( $field['name'] ) ? $field['name'] : $field['group_title'];
 		}
 		return $list;
@@ -80,7 +90,7 @@ class GroupField {
 	 * @param array $fields
 	 * @return array $return_fields fields of type group
 	 */
-	private function get_field_type_group( $fields ) {
+	private function get_field_type_group( $fields, $nested = '' ) {
 		// not field type is group.
 		$is_field_group = array_search( 'group', array_column( $fields, 'type' ) );
 		if ( false === $is_field_group ) {
@@ -90,11 +100,53 @@ class GroupField {
 		$return_fields = [];
 		foreach ( $fields as $field ) {
 			if ( 'group' === $field['type'] ) {
+				if ( ! empty( $nested ) ) {
+					$field['id'] = $nested . '.' . $field['id'];
+				}
 				$return_fields[] = $field;
+				if ( isset( $field['fields'] ) && 0 < count( $field['fields'] ) ) {
+					$return_fields = array_merge( $return_fields, $this->get_field_type_group( $field['fields'], $field['id'] ) );
+				}
 			}
 		}
 
 		return $return_fields;
+	}
+
+	public function get_value_nested_group( $values = [], $keys = [] ) {
+		if ( empty( $keys ) ) {
+			return $values;
+		}
+
+		foreach ( $keys as $key ) {
+			if ( ! isset( $values[ $key ] ) ) {
+				return $values;
+			}
+
+			$values = $values[ $key ];
+		}
+
+		return $values;
+	}
+
+	public function split_field_nested( $fields = [] ) {
+		if ( empty( $fields ) || ! is_array( $fields ) ) {
+			return $fields;
+		}
+
+		$return = [];
+		foreach ( $fields as $key => $value ) {
+			if ( strpos( $value, '.' ) === false ) {
+				continue;
+			}
+
+			$keys                             = explode( '.', $value, 2 );
+			$fields[ $key ]                   = $keys[0];
+			$return['sub_cols'][ $keys[0] ][] = $keys[1];
+		}
+
+		$return['cols'] = $fields;
+		return $return;
 	}
 
 	public static function change_url_ssl( $url ) {
