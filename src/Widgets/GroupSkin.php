@@ -174,8 +174,8 @@ class GroupSkin extends Skin_Base {
 		}
 
         //check group nested
-        $field_group = (array)$settings['field-group'];
-        if( strpos($settings['field-group'], '.') !== false ) {
+        $field_group = ( array )$settings['field-group'];
+        if( strpos( $settings['field-group'], '.' ) !== false ) {
             $field_group = explode( '.', $settings['field-group'] );
         }
         
@@ -199,8 +199,8 @@ class GroupSkin extends Skin_Base {
 			$content_template = $this->get_template();
 			$cols             = array_keys( $content_template['data'] );
 
-            if (stripos(json_encode($cols),'.') !== false) {
-                $tmp_cols = $group_fields->split_field_nested($cols);
+            if ( stripos( json_encode( $cols ), '.' ) !== false ) {
+                $tmp_cols = $group_fields->split_field_nested( $cols );
             }
             
 			foreach ( $data_groups as $k => $data_group ) {
@@ -223,9 +223,9 @@ class GroupSkin extends Skin_Base {
                         }
                         
                         $data_sub_column = array_combine( array_column( $data_column[ $sub_col ]['fields'], 'id' ), $data_column[ $sub_col ]['fields'] );
-                        $data_sub_column = array_filter($data_sub_column, function($k) use($tmp_col) {
-                            return $k == $tmp_col[1];
-                        }, ARRAY_FILTER_USE_KEY);
+                        $data_sub_column = array_filter( $data_sub_column, function( $k ) use( $tmp_col ) {
+                            return $k == $tmp_col[ 1 ];
+                        }, ARRAY_FILTER_USE_KEY );
                         
                         ob_start();
                         $this->parent->render_nested_group( $data_group[ $sub_col ], $data_sub_column, $group_fields );
@@ -289,47 +289,7 @@ class GroupSkin extends Skin_Base {
                         
                         $content = str_replace( $content_template['data'][ $col ], $value, $content );
                         continue;                        
-                    }
-                    
-
-//                    if( isset( $data_group[ $col ] ) && is_array( $data_group[ $col ] ) && !empty( $data_group[ $col ] ) ) {
-//                        $data_column[ $col ]['fields'] = array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] );
-//                        
-//                        if ( isset( $tmp_cols ) ) {
-//                            if ( isset( $tmp_cols['sub_cols'][ $col ] ) && count( $data_column[ $col ]['fields'] ) !== count( $tmp_cols['sub_cols'][ $col ] ) ) {
-//                                foreach ( $data_column[ $col ]['fields'] as $k => $v ) {
-//                                    if ( in_array( $k, $tmp_cols['sub_cols'][ $col ] ) ){
-//                                        continue;
-//                                    }
-//                                    unset( $data_column[ $col ]['fields'][ $k ] );
-//                                }
-//                            }
-//                        }                       
-//
-//                        ob_start();
-//                        $this->parent->render_nested_group( $data_group[ $col ], $data_column[ $col ]['fields'], $group_fields );
-//                        $value = ob_get_contents();
-//                        ob_end_clean();
-//                        
-//                        if ( !isset( $tmp_cols ) ) {
-//                            $content = str_replace( $content_template['data'][ $col ], $value, $content );
-//                            continue;
-//                        }
-//                        
-//                        print_r($content_template['data'][ $col ]);die();
-//                        
-//                        if ( !isset( $tmp_cols['sub_cols'][ $col ] ) ) {
-//                            continue;
-//                        }
-//                        
-//                        foreach ( $tmp_cols['sub_cols'][ $col ] as $k => $v ) {
-//                            if ( !isset( $content_template['data'][ "$col.$v" ] ) ){
-//                                continue;
-//                            }
-//                            $content = str_replace( $content_template['data'][ "$col.$v" ], $value, $content );
-//                        }
-//                        continue;
-//                    }                    
+                    }                                   
 
                     ob_start();
                     $group_fields->display_field( $data_group[ $col ], $data_column[ $col ], true );

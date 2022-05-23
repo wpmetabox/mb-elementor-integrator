@@ -63,7 +63,7 @@ trait Post {
 
 			$field_id = '';
 			if ( false !== strpos( $field['id'], '.' ) ) {
-				$field_id = str_replace( [ '.' ], [ ':' ], $field['id'] );
+				$field_id = str_replace( '.', ':', $field['id'] );
 			}
 
 			$child_options = [];
