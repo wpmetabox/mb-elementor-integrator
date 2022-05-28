@@ -133,42 +133,43 @@ trait Post {
 			return rwmb_meta( $key );
 		}
 		list( $post_type, $field_id ) = explode( ':', $key );
-		if ( empty( get_post_type_object( $post_type ) ) ) {
-			$valueField = rwmb_get_value( $post_type );
-
-			if ( 0 < count( $valueField ) ) {
-				if ( true === is_int( key( $valueField ) ) ) {
-					$valueField = array_shift( $valueField );
-				}
-
-				if ( false !== strpos( $field_id, '.' ) ) {
-					$sub_fields  = explode( '.', $field_id );
-					$group_field = new GroupField();
-					$valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields );
-					if ( true === is_int( key( $valueField ) ) ) {
-						$valueField = array_shift( $valueField );
-					}
-					$field_id = end( $sub_fields );
-				}
-
-				if ( is_array( $valueField[ $field_id ] ) ) {
-					$field                                  = rwmb_get_field_settings( $post_type, [], null );
+        if ( empty( get_post_type_object( $post_type ) ) ) { 
+            $valueField = rwmb_get_value( $post_type );
+            
+            if ( 0 < count( $valueField ) ) {
+                $sub_fields  = explode( '.', $field_id );
+                $group_field = new GroupField();
+                $valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields );               
+                if ( true === is_int( key( $valueField ) ) ) {
+                    $valueField = array_shift( $valueField );
+                }
+                
+                if ( isset( $valueField[ $field_id ] ) && is_array( $valueField[ $field_id ] ) ) {
+					$field                                  = rwmb_get_field_settings( $post_type, [ ], null );
 					$field['fields']                        = array_combine( array_column( $field['fields'], 'id' ), $field['fields'] );
 					$field['fields'][ $field_id ]['fields'] = array_combine( array_column( $field['fields'][ $field_id ]['fields'], 'id' ), $field['fields'][ $field_id ]['fields'] );
 					$this->extract_value( $valueField[ $field_id ], $field['fields'][ $field_id ]['fields'] );
-				} else {
-					echo $valueField[ $field_id ];
-				}
-			}
-		} else {
-			$field = rwmb_get_field_settings( $field_id, [], null );
+                    return;
+                }
+                
+                if ( isset( $valueField[ $field_id ] ) && !is_array( $valueField[ $field_id ] ) ) {
+                    $valueField = $valueField[ $field_id ];
+                }
+                
+                echo $valueField;
+                return;
+            }
+            
+            return null;
+        }
+        
+        $field = rwmb_get_field_settings( $field_id, [], null );
 
-			if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {
-				echo rwmb_get_value( $field_id );
-			} else {
-				rwmb_the_value( $field_id );
-			}
-		}
+        if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {
+            echo rwmb_get_value( $field_id );
+        } else {
+            rwmb_the_value( $field_id );
+        }        
 	}
 
 	private function extract_value( $field = [], $fieldSetting = [], $echo = true ) {

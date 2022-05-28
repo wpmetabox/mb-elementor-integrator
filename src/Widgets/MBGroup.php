@@ -170,10 +170,11 @@ class MBGroup extends Widget_Base {
 			$field_group = explode( '.', $settings['field-group'] );
 		}
 
-		$data_groups = rwmb_meta( $field_group[0], [], $post->ID );
+		$data_groups = rwmb_meta( $field_group[0], [], $post->ID );    
 		array_shift( $field_group );
-		$data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
-
+        if ( !empty( $field_group ) ){
+            $data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
+        }
 		if ( 0 === count( $data_groups ) ) {
 			return;
 		}

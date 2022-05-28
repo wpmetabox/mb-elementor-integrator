@@ -113,20 +113,39 @@ class GroupField {
 		return $return_fields;
 	}
 
-	public function get_value_nested_group( $values = [], $keys = [] ) {
-		if ( empty( $keys ) ) {
-			return $values;
+	public function get_value_nested_group( $values = [ ], $keys = [ ] ) {
+		if ( empty( $keys ) ||  empty( $values ) ) {
+			return [ ];
 		}
-
-		foreach ( $keys as $key ) {
-			if ( ! isset( $values[ $key ] ) ) {
-				return $values;
-			}
-
-			$values = $values[ $key ];
+        
+		if ( false === is_int( key( $values ) ) ) {
+			$values = [ $values ];
 		}
+        
+        $return = [];
+        $match_keys = [];
+        foreach ( $values as $index => $value ) {
 
-		return $values;
+            if ( $index > 0 ) {
+                $match_keys = [];
+            }
+            
+            foreach ( $keys as $key ) {
+                if ( ! isset( $value[ $key ] ) ) {
+                    continue;
+                }
+                
+                $match_keys[ ] = $key;
+                if ( $key !== end( $keys ) ) {
+                    $return = array_merge( $return, $this->get_value_nested_group( $value[ $key ], array_diff( $keys, $match_keys ) ) );
+                    continue;
+                }
+                                
+                $return = array_merge( $return, ( array )$value[ $key ] );
+            }
+        }        
+
+		return $return;
 	}
 
 	public function split_field_nested( $fields = [] ) {

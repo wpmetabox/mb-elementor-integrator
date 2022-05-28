@@ -181,7 +181,9 @@ class GroupSkin extends Skin_Base {
         
 		$data_groups = rwmb_meta( $field_group[ 0 ], [], $post->ID );
         array_shift( $field_group );
-        $data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
+        if ( !empty( $field_group ) ){
+            $data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
+        }
 
 		if ( 0 === count( $data_groups ) ) {
 			return;
@@ -204,8 +206,8 @@ class GroupSkin extends Skin_Base {
             }
             
 			foreach ( $data_groups as $k => $data_group ) {
-				$check_cols = array_intersect( array_keys( $data_group ), isset($tmp_cols) ? $tmp_cols['cols'] : $cols );
-				if ( 0 === count( $check_cols ) ) {
+				$check_cols = array_intersect( array_keys( $data_group ), $cols );
+				if ( 0 === count( $check_cols ) && !isset( $tmp_cols ) ) {
 					continue;
 				}
 
