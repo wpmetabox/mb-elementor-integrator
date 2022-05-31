@@ -3,12 +3,37 @@ namespace MBEI\Traits;
 
 use Elementor\Plugin;
 use MBEI\GroupField;
+use Elementor\Controls_Manager;
 
 trait Post {
 	public function get_group() {
 		return 'post';
 	}
 
+    protected function register_advanced_section() {
+		$document = Plugin::instance()->documents->get_current();
+		if ( ! empty( $document ) && 'metabox_group_template' === $document->get_type() ) {
+            $this->start_controls_section(
+                'meta-box-tag',
+                [
+                    'label' => esc_html__( 'Meta Box Template', 'mb-elementor-integrator' ),
+                ]
+            );
+            
+            $group_fields = new GroupField();
+            $this->add_control( 'mb_skin_template', [
+                'type'        => Controls_Manager::SELECT2,
+                'label_block' => true,
+                'default'     => [],
+                'options'     => $group_fields->get_skin_template(),
+            ] );          
+            
+		}         
+
+        $this->end_controls_section();          
+        parent::register_advanced_section();
+    }    
+    
 	private function get_option_groups() {
 		$document = Plugin::instance()->documents->get_current();
 		if ( ! empty( $document ) && 'metabox_group_template' === $document->get_type() ) {
@@ -107,8 +132,8 @@ trait Post {
 			if ( false !== strpos( $field_id, '.' ) ) {
 				$sub_fields  = explode( '.', $field_id );
 				$group_field = new GroupField();
-				$valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields );
-				if ( true === is_int( key( $valueField ) ) ) {
+				$valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields, true );
+				if ( false !== is_int( key( $valueField ) ) ) {
 					$valueField = array_shift( $valueField );
 				}
 				$field_id = end( $sub_fields );
@@ -135,12 +160,12 @@ trait Post {
 		list( $post_type, $field_id ) = explode( ':', $key );
         if ( empty( get_post_type_object( $post_type ) ) ) { 
             $valueField = rwmb_get_value( $post_type );            
-            if ( 0 < count( $valueField ) ) {
+            if ( 0 < count( $valueField ) ) {                
                 $sub_fields  = explode( '.', $field_id );
                 $group_field = new GroupField();
                 $valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields, true );   
-     
-                if ( false !== is_int( key( $valueField ) ) ) {
+                
+                if (false !== is_int( key( $valueField ) ) ) {
                     $valueField = array_shift( $valueField );
                 }
                 
@@ -172,23 +197,32 @@ trait Post {
         }        
 	}
 
-	private function extract_value( $field = [], $fieldSetting = [], $echo = true ) {
-		if ( true === is_int( key( $field ) ) ) {
-			$field = array_shift( $field );
-		}
+	private function extract_value( $field = [ ], $fieldSetting = [ ], $echo = true ) {
 
 		if ( false === $echo ) {
 			return $field;
-		}
+		}                
 
-		echo '<div class="mbei-group mbei-group-nested">';
-		foreach ( $field as $key => $value ) {
-			if ( isset( $fieldSetting[ $key ] ) && isset( $fieldSetting[ $key ]['mime_type'] ) && 'image' === $fieldSetting[ $key ]['mime_type'] && ! empty( $value ) ) {
-				echo '<div class="mbei-subfield mbei-subfield--' . $key . '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
-				continue;
-			}
-			echo '<div class="mbei-subfield mbei-subfield--' . $key . '">' . $value . '</div>';
-		}
-		echo '</div>';
+        if ( empty( $this->get_settings( 'mb_skin_template' ) ) ) {
+            if ( false !== is_int( key( $field ) ) ) {
+                $field = array_shift( $field );
+            }
+            
+            echo '<div class="mbei-group mbei-group-nested">';
+            foreach ( $field as $key => $value ) {
+                if ( isset( $fieldSetting[ $key ] ) && isset( $fieldSetting[ $key ]['mime_type'] ) && 'image' === $fieldSetting[ $key ]['mime_type'] && ! empty( $value ) ) {
+                    echo '<div class="mbei-subfield mbei-subfield--' . $key . '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
+                    continue;
+                }
+                echo '<div class="mbei-subfield mbei-subfield--' . $key . '"> ' . $value . '</div>';
+            }
+            echo '</div>';            
+            return;
+        }
+
+        $group_fields = new GroupField();
+        $templates = $group_fields->get_skin_template();
+        $template_name = strtolower( $templates[ $this->get_settings('mb_skin_template') ] );
+        echo "{{ placeholder template $template_name }}";              
 	}
 }
