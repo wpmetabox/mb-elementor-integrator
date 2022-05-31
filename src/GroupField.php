@@ -113,7 +113,7 @@ class GroupField {
 		return $return_fields;
 	}
 
-	public function get_value_nested_group( $values = [ ], $keys = [ ] ) {
+	public function get_value_nested_group( $values = [ ], $keys = [ ], $first_item = false ) {
 		if ( empty( $keys ) ||  empty( $values ) ) {
 			return [ ];
 		}
@@ -121,6 +121,10 @@ class GroupField {
 		if ( false === is_int( key( $values ) ) ) {
 			$values = [ $values ];
 		}
+        
+        if ( true === $first_item ) {
+            $values = [array_shift( $values )];
+        }
         
         $return = [];
         $match_keys = [];

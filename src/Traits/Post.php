@@ -134,21 +134,21 @@ trait Post {
 		}
 		list( $post_type, $field_id ) = explode( ':', $key );
         if ( empty( get_post_type_object( $post_type ) ) ) { 
-            $valueField = rwmb_get_value( $post_type );
-            
+            $valueField = rwmb_get_value( $post_type );            
             if ( 0 < count( $valueField ) ) {
                 $sub_fields  = explode( '.', $field_id );
                 $group_field = new GroupField();
-                $valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields );               
-                if ( true === is_int( key( $valueField ) ) ) {
+                $valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields, true );   
+     
+                if ( false !== is_int( key( $valueField ) ) ) {
                     $valueField = array_shift( $valueField );
                 }
                 
-                if ( isset( $valueField[ $field_id ] ) && is_array( $valueField[ $field_id ] ) ) {
+                if ( is_array( $valueField ) ) {
 					$field                                  = rwmb_get_field_settings( $post_type, [ ], null );
 					$field['fields']                        = array_combine( array_column( $field['fields'], 'id' ), $field['fields'] );
 					$field['fields'][ $field_id ]['fields'] = array_combine( array_column( $field['fields'][ $field_id ]['fields'], 'id' ), $field['fields'][ $field_id ]['fields'] );
-					$this->extract_value( $valueField[ $field_id ], $field['fields'][ $field_id ]['fields'] );
+					$this->extract_value( $valueField, $field['fields'][ $field_id ]['fields'] );
                     return;
                 }
                 
