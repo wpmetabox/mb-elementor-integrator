@@ -339,10 +339,6 @@ class GroupField {
                     $this->render_nested_group( $data_group, $data_sub_column );
                     $value = ob_get_contents();
                     ob_end_clean();
-
-                    if(!empty($content_template['data'][ $col ]['template'])){
-                        print_r($content_template);die();
-                    }
                     
                     //Display text from sub field group.
                     if ( !isset( $data_sub_column[ $tmp_col[ 0 ] ]['mime_type'] ) || 'image' !== $data_sub_column[ $tmp_col[ 0 ] ]['mime_type'] ) {
