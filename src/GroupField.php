@@ -6,7 +6,7 @@ use Elementor\Plugin;
 use Elementor\Core\DynamicTags\Manager;
 
 class GroupField {
-
+    
     public function get_current_post() {
         global $post, $wp_query;
 
@@ -45,23 +45,68 @@ class GroupField {
         }
         return $options;
     }
-
-    public function get_template( $template_id = null ) {
+    
+    public function get_placeholder_template( $template_id ) {
+        $templates = $this->get_skin_template();
+        $template_name = strtolower( $templates[ $template_id ] );
+        return "{{ placeholder template $template_name }}"; 
+    }
+    
+    public function get_template_settings( $template_id = null ) {
         $template = $this->get_id_support_wpml( $template_id );
 
         if ( !$template ) {
             return;
         }
+        
         // Get elements settings.
         $document = Plugin::instance()->documents->get( $template );
         $settings = $document->get_elements_data();
+        
+        return [$settings, $template];
+    }
+
+    public function get_template( $template_id = null ) {
+        // Get elements settings.
+        list($settings, $template) = $this->get_template_settings( $template_id );
+        if ( !$settings ) {
+            return;
+        }
         // Get data dynamic tags
         $dynamic_tags = [];
         $this->find_element_dynamic_tag( $settings, $dynamic_tags );
+        $sub_group = isset( $dynamic_tags['sub-group'] ) ? $dynamic_tags['sub-group'] : [];
+        unset( $dynamic_tags['sub-group'] );  
+
         $data_replace = $this->dynamic_tag_to_data( $dynamic_tags, Plugin::instance()->dynamic_tags );
         // Get Content Template.
-        $content_template = Plugin::instance()->frontend->get_builder_content_for_display( $template );
-
+        $content_template = Plugin::instance()->frontend->get_builder_content_for_display( $template, true );
+        
+        if ( 0 < count( $sub_group ) ) {
+            libxml_use_internal_errors( true );
+            $domTemplate = new \DOMDocument();
+            $domTemplate->loadHTML( $content_template );
+            libxml_clear_errors();
+            $xpath = new \DOMXpath( $domTemplate );            
+            foreach ( $sub_group as $sub ) {
+                $widget_sub = $xpath->query( '//div[@data-id="'.$sub['id'].'"]//div[contains(@class,"mbei-sub-groups")]' );                
+                if($widget_sub->length > 0) {
+                    $widget_node = $widget_sub->item(0);
+                    
+                    $replacement  = $domTemplate->createDocumentFragment();
+                    $replacement->appendXML( '<div class="'.$widget_node->getAttribute('class').'" data-id="'.$widget_node->getAttribute('data-id').'">'.$this->get_placeholder_template( $sub['template'] ).'</div>' );
+                                       
+                    $widget_node->parentNode->replaceChild( $replacement, $widget_node );
+                    $content_template = $domTemplate->saveHTML( $domTemplate->documentElement );
+                    $content_template = str_replace( [ '<html>', '</html>', '<head>', '</head>', '<body>', '</body>' ], '', $content_template );
+                }
+            }            
+        }
+        
+//        if($template_id == 1291){
+//            print_r($data_replace);
+//            print_r($content_template);die();
+//        }
         return [
             'data' => $data_replace,
             'content' => $content_template,
@@ -108,6 +153,16 @@ class GroupField {
                 $results = array_merge_recursive( $results, $elements['settings']['__dynamic__'] );
                 continue;
             }
+            
+            if ( isset( $elements['elType'] ) && 'widget' === $elements['elType'] && isset( $elements['settings']['_skin'] ) && 'meta_box_skin_group' === $elements['settings']['_skin'] && !empty( $elements['settings']['mb_skin_template'] ) ) {
+                $results = array_merge_recursive( $results, [
+                    'editor' => '[elementor-tag id="'.dechex( rand( 1, 99999999 ) ).'" name="meta-box-text" settings="'. urlencode( json_encode( [ 'key' => str_replace( '.', ':', $elements['settings']['field-group'] ), 'mb_skin_template' => $elements['settings']['mb_skin_template'] ] ) ).'"]'
+                ] );
+                $results['sub-group'][ ] = [
+                    'id'        => $elements['id'],
+                    'template'  => $elements['settings']['mb_skin_template']
+                ];
+            }             
 
             $this->find_element_dynamic_tag( $elements, $results );
         }
@@ -307,7 +362,7 @@ class GroupField {
         }
     }
 
-    public function display_data_template( $template_id, $data_groups, $data_column, $options = ['loop_header' => '', 'loop_footer' => ''] ) {
+    public function display_data_template( $template_id, $data_groups, $data_column, $options = ['loop_header' => '', 'loop_footer' => '' ] ) {
         $content_template = $this->get_template( $template_id );        
         $cols = array_keys( $content_template['data'] );
 
@@ -391,7 +446,7 @@ class GroupField {
                     $data_sub_column = array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] );
                     if ( !empty( $content_template['data'][ $col ]['template'] ) ) {
                         ob_start();
-                        $this->display_data_template( $content_template['data'][ $col ]['template'], $data_group[ $col ], $data_sub_column );
+                        $this->display_data_template( $content_template['data'][ $col ]['template'], $data_group[ $col ], $data_sub_column, $options );
                         $value = ob_get_contents();
                         ob_end_clean();
                         

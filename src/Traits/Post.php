@@ -9,30 +9,6 @@ trait Post {
 	public function get_group() {
 		return 'post';
 	}
-
-    protected function register_advanced_section() {
-		$document = Plugin::instance()->documents->get_current();
-		if ( ! empty( $document ) && 'metabox_group_template' === $document->get_type() ) {
-            $this->start_controls_section(
-                'meta-box-tag',
-                [
-                    'label' => esc_html__( 'Meta Box Template', 'mb-elementor-integrator' ),
-                ]
-            );
-            
-            $group_fields = new GroupField();
-            $this->add_control( 'mb_skin_template', [
-                'type'        => Controls_Manager::SELECT2,
-                'label_block' => true,
-                'default'     => [],
-                'options'     => $group_fields->get_skin_template(),
-            ] );          
-            
-		}         
-
-        $this->end_controls_section();          
-        parent::register_advanced_section();
-    }    
     
 	private function get_option_groups() {
 		$document = Plugin::instance()->documents->get_current();
@@ -221,8 +197,9 @@ trait Post {
         }
 
         $group_fields = new GroupField();
-        $templates = $group_fields->get_skin_template();
-        $template_name = strtolower( $templates[ $this->get_settings('mb_skin_template') ] );
-        echo "{{ placeholder template $template_name }}";              
+        echo $group_fields->get_placeholder_template( $this->get_settings('mb_skin_template'), [
+            'loop_header'   => '<div class="mbei-sub-group">',
+            'loop_footer'   => '</div>'            
+        ] );
 	}
 }

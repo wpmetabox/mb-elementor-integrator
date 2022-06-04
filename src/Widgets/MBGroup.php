@@ -83,13 +83,31 @@ class MBGroup extends Widget_Base {
 			'label' => esc_html__( 'Meta Box Group', 'mb-elementor-integrator' ),
 		] );
 
-		$options = ( new GroupField() )->get_list_field_group();
+		$group_fields = new GroupField();
+		$options      = $group_fields->get_list_field_group();
 		$this->add_control( 'field-group', [
 			'label'       => esc_html__( 'Fields Group', 'mb-elementor-integrator' ),
 			'type'        => Controls_Manager::SELECT2,
 			'label_block' => true,
 			'options'     => $options,
 			'default'     => key( $options ),
+		] );
+
+		$this->add_control( 'mb_skin_template', [
+			'label'       => __( 'Select a Group Skin', 'mb-elementor-integrator' ),
+			'description' => '<div style="text-align:center;"><a target="_blank" style="text-align: center;font-style: normal;" href="' . esc_url( admin_url( '/edit.php?post_type=elementor_library&tabs_group=theme&elementor_library_type=metabox_group_template' ) ) .
+			'" class="elementor-button elementor-button-default elementor-repeater-add">' .
+			__( 'Create/edit a Group Skin', 'mb-elementor-integrator' ) . '</a></div>',
+			'type'        => Controls_Manager::SELECT2,
+			'label_block' => true,
+			'default'     => [],
+			'options'     => $group_fields->get_skin_template(),
+		] );
+
+		$this->end_controls_section();
+
+		$this->start_controls_section( 'section_display', [
+			'label' => esc_html__( 'Display', 'mb-elementor-integrator' ),
 		] );
 
 		$this->add_responsive_control( 'mb_column', [
@@ -144,6 +162,22 @@ class MBGroup extends Widget_Base {
 		}
 	}
 
+	private function render_header() {
+		return '<div class="mbei-groups">';
+	}
+
+	private function render_footer() {
+		return '</div>';
+	}
+
+	protected function render_loop_header() {
+		return '<div class="mbei-group">';
+	}
+
+	protected function render_loop_footer() {
+		return '</div>';
+	}
+
 	/**
 	 * Render Term List widget output on the frontend.
 	 *
@@ -170,11 +204,12 @@ class MBGroup extends Widget_Base {
 			$field_group = explode( '.', $settings['field-group'] );
 		}
 
-		$data_groups = rwmb_meta( $field_group[0], [], $post->ID );    
+		$data_groups = rwmb_meta( $field_group[0], [], $post->ID );
 		array_shift( $field_group );
-        if ( !empty( $field_group ) ){
-            $data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
-        }
+		if ( ! empty( $field_group ) ) {
+			$data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
+		}
+
 		if ( 0 === count( $data_groups ) ) {
 			return;
 		}
@@ -186,28 +221,33 @@ class MBGroup extends Widget_Base {
 		$fields      = $group_fields->get_field_group( $settings['field-group'] );
 		$data_column = array_combine( array_column( $fields['fields'], 'id' ), $fields['fields'] );
 
-		if ( count( $data_groups ) > 0 ) {
+		echo $this->render_header();
+		if ( $this->get_settings_for_display( 'mb_skin_template' ) ) {
+			$group_fields->display_data_template( $this->get_settings_for_display( 'mb_skin_template' ), $data_groups, $data_column, [
+				'loop_header' => $this->render_loop_header(),
+				'loop_footer' => $this->render_loop_footer(),
+			] );
+		} else {
 			?>
-			<div class="mbei-groups">
-				<?php foreach ( $data_groups as $data_group ) : ?>
-					<div class="mbei-group">
-						<?php foreach ( $data_group as $key => $value ) : ?>
-							<div class="mbei-subfield mbei-subfield--<?= $key; ?>">
-								<?php
-								if ( is_array( $value ) && ! empty( $value ) ) {
-									$data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
-									$this->render_nested_group( $value, $data_column[ $key ]['fields'], $group_fields );
-									continue;
-								}
-									$group_fields->display_field( $value, $data_column[ $key ] );
-								?>
-							</div>
-						<?php endforeach; ?>
-					</div>
-				<?php endforeach; ?>                    
-			</div>
+			<?php foreach ( $data_groups as $data_group ) : ?>
+				<div class="mbei-group">
+					<?php foreach ( $data_group as $key => $value ) : ?>
+						<div class="mbei-subfield mbei-subfield--<?= $key; ?>">
+							<?php
+							if ( is_array( $value ) && ! empty( $value ) ) {
+								$data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
+								$group_fields->render_nested_group( $value, $data_column[ $key ]['fields'] );
+								continue;
+							}
+								$group_fields->display_field( $value, $data_column[ $key ] );
+							?>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			<?php endforeach; ?>                    
 			<?php
 		}
+		echo $this->render_footer();
 	}
 
 	protected function content_template() {
