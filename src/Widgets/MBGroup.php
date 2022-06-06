@@ -86,7 +86,7 @@ class MBGroup extends Widget_Base {
 		$group_fields = new GroupField();
 		$options      = $group_fields->get_list_field_group();
 		$this->add_control( 'field-group', [
-			'label'       => esc_html__( 'Fields Group', 'mb-elementor-integrator' ),
+			'label'       => esc_html__( 'Group', 'mb-elementor-integrator' ),
 			'type'        => Controls_Manager::SELECT2,
 			'label_block' => true,
 			'options'     => $options,
@@ -94,7 +94,7 @@ class MBGroup extends Widget_Base {
 		] );
 
 		$this->add_control( 'mb_skin_template', [
-			'label'       => __( 'Select a Group Skin', 'mb-elementor-integrator' ),
+			'label'       => __( 'Skin', 'mb-elementor-integrator' ),
 			'description' => '<div style="text-align:center;"><a target="_blank" style="text-align: center;font-style: normal;" href="' . esc_url( admin_url( '/edit.php?post_type=elementor_library&tabs_group=theme&elementor_library_type=metabox_group_template' ) ) .
 			'" class="elementor-button elementor-button-default elementor-repeater-add">' .
 			__( 'Create/edit a Group Skin', 'mb-elementor-integrator' ) . '</a></div>',

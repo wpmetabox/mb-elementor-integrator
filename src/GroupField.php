@@ -39,7 +39,7 @@ class GroupField {
             wp_cache_set( $cache_key, $templates );
         }
 
-        $options = [ 0 => __( 'Select a template', 'mb-elementor-integrator' ) ];
+        $options = [ 0 => __( 'Select a skin', 'mb-elementor-integrator' ) ];
         foreach ( $templates as $template ) {
             $options[ $template->ID ] = $template->post_title;
         }
