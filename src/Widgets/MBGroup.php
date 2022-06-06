@@ -78,10 +78,14 @@ class MBGroup extends Widget_Base {
 	 * @access protected
 	 */
 	public function register_controls() {
-
+        
 		$this->start_controls_section( 'section_metabox', [
 			'label' => esc_html__( 'Meta Box Group', 'mb-elementor-integrator' ),
 		] );
+        
+        $this->update_control( '_skin', [
+            'label' => esc_html__( 'Type', 'mb-elementor-integrator' )
+        ] );
 
 		$group_fields = new GroupField();
 		$options      = $group_fields->get_list_field_group();
