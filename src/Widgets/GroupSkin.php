@@ -79,7 +79,7 @@ class GroupSkin extends Skin_Base {
 			$data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
 		}
 
-		if ( 0 == count( $data_groups ) ) {
+		if ( empty( $data_groups ) ) {
 			return;
 		}
 
