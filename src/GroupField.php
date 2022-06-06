@@ -113,8 +113,8 @@ class GroupField {
         ];
     }
 
-    private function dynamic_tag_to_data( $dynamic_tags = [ ], Manager $dynamic_tags_mageger ) {
-        if ( empty( $dynamic_tags ) ) {
+    private function dynamic_tag_to_data( $dynamic_tags = [ ], Manager $dynamic_tags_mageger = null ) {
+        if ( empty( $dynamic_tags ) || empty( $dynamic_tags_mageger ) ) {
             return [ ];
         }
 
@@ -174,8 +174,8 @@ class GroupField {
         return $newid ? $newid : $id;
     }
 
-    public function parse_options( $fields = [ ], $field_group_id ) {
-        if ( empty( $fields ) || !isset( $fields['fields'] ) || empty( $fields['fields'] ) ) {
+    public function parse_options( $fields = [ ], $field_group_id = null ) {
+        if ( empty( $fields ) || !isset( $fields['fields'] ) || empty( $fields['fields'] ) || empty( $field_group_id ) ) {
             return [ ];
         }
 
