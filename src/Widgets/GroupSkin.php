@@ -101,24 +101,10 @@ class GroupSkin extends Skin_Base {
 				'loop_footer' => $this->render_loop_footer(),
 			] );
 		} else {
-			?>
-			<?php foreach ( $data_groups as $data_group ) : ?>
-				<div class="mbei-group">
-					<?php foreach ( $data_group as $key => $value ) : ?>
-						<div class="mbei-subfield mbei-subfield--<?= $key; ?>">
-							<?php
-							if ( is_array( $value ) && ! empty( $value ) ) {
-								$data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
-								$group_fields->render_nested_group( $value, $data_column[ $key ]['fields'] );
-								continue;
-							}
-								$group_fields->display_field( $value, $data_column[ $key ] );
-							?>
-						</div>
-					<?php endforeach; ?>
-				</div>
-			<?php endforeach; ?>                    
-			<?php
+            $group_fields->display_data_widget( $data_groups, $data_column, [
+				'loop_header' => $this->render_loop_header(),
+				'loop_footer' => $this->render_loop_footer(),
+            ]);
 		}
 		echo $this->render_footer();
 	}

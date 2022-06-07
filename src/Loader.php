@@ -7,12 +7,12 @@ class Loader {
 
 		// Check plugin elementor is loaded.
 		if ( defined( 'ELEMENTOR_VERSION' ) ) {
-			add_action( 'elementor/dynamic_tags/register_tags', [ $this, 'register_tags' ] );
+			add_action( 'elementor/dynamic_tags/register', [ $this, 'register_tags' ] );
 		}
 
 		// Check plugin elementor and elementor pro is loaded.
 		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
-			add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_skins' ] );
+			add_action( 'elementor/widgets/register', [ $this, 'register_skins' ] );
 			add_action( 'elementor/theme/register_conditions', [ $this, 'register_conditions' ], 100 );
 			$this->init();
 		}
@@ -58,20 +58,20 @@ class Loader {
 			return;
 		}
 
-		$dynamic_tags->register_tag( 'MBEI\Tags\Post\Text' );
-		$dynamic_tags->register_tag( 'MBEI\Tags\Post\Image' );
-		$dynamic_tags->register_tag( 'MBEI\Tags\Post\Video' );
+		$dynamic_tags->register( new Tags\Post\Text() );
+		$dynamic_tags->register( new Tags\Post\Image() );
+		$dynamic_tags->register( new Tags\Post\Video() );
 
 		if ( function_exists( 'mb_term_meta_load' ) ) {
-			$dynamic_tags->register_tag( 'MBEI\Tags\Archive\Text' );
-			$dynamic_tags->register_tag( 'MBEI\Tags\Archive\Image' );
-			$dynamic_tags->register_tag( 'MBEI\Tags\Archive\Video' );
+			$dynamic_tags->register( new Tags\Archive\Text() );
+			$dynamic_tags->register( new Tags\Archive\Image() );
+			$dynamic_tags->register( new Tags\Archive\Video() );
 		}
 
 		if ( function_exists( 'mb_settings_page_load' ) ) {
-			$dynamic_tags->register_tag( 'MBEI\Tags\Settings\Text' );
-			$dynamic_tags->register_tag( 'MBEI\Tags\Settings\Image' );
-			$dynamic_tags->register_tag( 'MBEI\Tags\Settings\Video' );
+			$dynamic_tags->register( new Tags\Settings\Text() );
+			$dynamic_tags->register( new Tags\Settings\Image() );
+			$dynamic_tags->register( new Tags\Settings\Video() );
 		}
 	}
 

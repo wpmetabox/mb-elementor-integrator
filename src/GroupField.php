@@ -362,7 +362,7 @@ class GroupField {
         }
     }
 
-    public function display_data_template( $template_id, $data_groups, $data_column, $options = ['loop_header' => '', 'loop_footer' => '' ] ) {
+    public function display_data_template( $template_id, $data_groups, $data_column, $options = [ 'loop_header' => '', 'loop_footer' => '' ] ) {
         $content_template = $this->get_template( $template_id );        
         $cols = array_keys( $content_template['data'] );
 
@@ -471,6 +471,37 @@ class GroupField {
                 $content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
             }
             echo $content;
+        }
+    }
+    
+    public function display_data_widget( $data_groups, $data_column, $options = [ 'loop_header' => '', 'loop_footer' => '' ] ) {
+        if ( empty( $data_groups ) ) {
+            return;
+        }
+        
+        foreach ( $data_groups as $data_group ) {
+            if ( !is_array( $data_group ) ) {
+                continue;
+            }
+            
+            echo $options['loop_header'];
+            foreach ( $data_group as $key => $value ) {
+                if ( is_array( $value ) && ! empty( $value ) ) {
+                    $data_sub_column = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
+                }
+                
+                ob_start( );
+                isset( $data_sub_column ) ? $this->render_nested_group( $value, $data_sub_column ) : $this->display_field( $value, $data_column[ $key ] );
+                $content = ob_get_contents();
+                ob_end_clean( );                
+                
+                if ( empty( $content ) ) {
+                    continue;
+                }
+                
+                echo sprintf( '<div class="mbei-subfield mbei-subfield--%s">%s</div>', $key, $content );
+            }
+            echo $options['loop_footer'];
         }
     }
 
