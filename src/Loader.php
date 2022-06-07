@@ -14,7 +14,7 @@ class Loader {
 
 		// Check plugin elementor and elementor pro is loaded.
 		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
-			add_action( 'elementor/widgets/register', [ $this, 'register_widgets' ] );
+			add_action( 'elementor/widgets/register', [ $this, 'register_skins' ] );
 			add_action( 'elementor/theme/register_conditions', [ $this, 'register_conditions' ], 100 );
 			$this->init();
 		}
@@ -22,6 +22,7 @@ class Loader {
 
 	public function init() {
 		$this->register_locations();
+		$this->register_widgets();
 		$this->modules();
 	}
 
@@ -44,9 +45,10 @@ class Loader {
 		new Widgets\GroupLocation();
 	}
 
-	public function register_widgets( $widgets_manager ) {
-		$widgets_manager->register( new Widgets\MBGroup() );
-        $this->register_skins();
+	public function register_widgets() {
+		add_action('elementor/widgets/register', function( $widgets_manager ) {
+			$widgets_manager->register( new Widgets\MBGroup() );
+		});
 	}
 
 	/**
@@ -54,9 +56,6 @@ class Loader {
 	 * @param object $dynamic_tags Elementor dynamic tags instance.
 	 */
 	public function register_tags( Manager $dynamic_tags ) {
-        global $wp_actions;
-        unset( $wp_actions[ 'elementor/dynamic_tags/register_tags' ] );
-
 		if ( ! $this->is_valid() ) {
 			return;
 		}
