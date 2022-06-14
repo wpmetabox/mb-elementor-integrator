@@ -77,7 +77,7 @@ class GroupField {
         $this->find_element_dynamic_tag( $settings, $dynamic_tags );
         $sub_group = isset( $dynamic_tags['sub-group'] ) ? $dynamic_tags['sub-group'] : [];
         unset( $dynamic_tags['sub-group'] );  
-
+ 
         $data_replace = $this->dynamic_tag_to_data( $dynamic_tags, Plugin::instance()->dynamic_tags );
         // Get Content Template.
         $content_template = Plugin::instance()->frontend->get_builder_content_for_display( $template, true );
@@ -100,13 +100,9 @@ class GroupField {
                     $content_template = $domTemplate->saveHTML( $domTemplate->documentElement );
                     $content_template = str_replace( [ '<html>', '</html>', '<head>', '</head>', '<body>', '</body>' ], '', $content_template );
                 }
-            }            
+            }     
         }
         
-//        if($template_id == 1291){
-//            print_r($data_replace);
-//            print_r($content_template);die();
-//        }
         return [
             'data' => $data_replace,
             'content' => $content_template,
@@ -132,14 +128,27 @@ class GroupField {
             }
             // Get tag content.
             $tag_data_content = $dynamic_tags_mageger->get_tag_data_content( $tag_data['id'], $tag_data['name'], $tag_data['settings'] );
-            $key = explode( ':', $tag_data['settings']['key'] )[ 1 ];
+            list( $post_type, $key ) = explode( ':', $tag_data['settings']['key'], 2 );
+            if ( false !== strpos( $key, ':' ) ) {
+                $key = explode( ':', $key, 2 );
+                $key = end( $key );
+            }
+            
+            if( false !== strpos( $key, '.' ) ){
+                $key = explode( '.', $key, 2 );
+                $key = end( $key );
+            }
+            
             if ( isset( $tag_data_content['url'] ) ) {
                 $data_replace[ $key ]['content'] = self::change_url_ssl( $tag_data_content['url'] );
+            } elseif ( isset( $tag_data['settings']['mb_skin_template'] ) ) { 
+                $data_replace[ $key ]['content'] = $this->get_placeholder_template( $tag_data['settings']['mb_skin_template'] );
             } else {
                 $data_replace[ $key ]['content'] = $tag_data_content;
             }
             $data_replace[ $key ]['template'] = isset( $tag_data['settings']['mb_skin_template'] ) ? $tag_data['settings']['mb_skin_template'] : '';
         }
+        
         return $data_replace;
     }
 
@@ -155,8 +164,13 @@ class GroupField {
             }
             
             if ( isset( $elements['elType'] ) && 'widget' === $elements['elType'] && isset( $elements['settings']['_skin'] ) && 'meta_box_skin_group' === $elements['settings']['_skin'] && !empty( $elements['settings']['mb_skin_template'] ) ) {
+                $field_group = 'setting' === $elements['settings']['object-type'] ? $elements['settings']['field-group-setting'] : $elements['settings']['field-group'];
+                $field_group = explode( '.', $field_group, 2 );
+                
+                $name = 'setting' !== $elements['settings']['object-type'] ? 'meta-box-settings-text' : 'meta-box-text';
+                
                 $results = array_merge_recursive( $results, [
-                    'editor' => '[elementor-tag id="'.dechex( rand( 1, 99999999 ) ).'" name="meta-box-text" settings="'. urlencode( json_encode( [ 'key' => str_replace( '.', ':', $elements['settings']['field-group'] ), 'mb_skin_template' => $elements['settings']['mb_skin_template'] ] ) ).'"]'
+                    'editor' => '[elementor-tag id="'.dechex( rand( 1, 99999999 ) ).'" name="'.$name.'" settings="'. urlencode( json_encode( [ 'key' => str_replace( '.', ':', $field_group[ 1 ] ), 'mb_skin_template' => $elements['settings']['mb_skin_template'] ] ) ).'"]'
                 ] );
                 $results['sub-group'][ ] = [
                     'id'        => $elements['id'],
@@ -173,6 +187,109 @@ class GroupField {
         $newid = apply_filters( 'wpml_object_id', $id, 'elementor_library', true );
         return $newid ? $newid : $id;
     }
+    
+	public function get_option_dynamic_tag( $object_type = 'post') {
+		$groups[] = [
+			'label'   => __( '-- Meta Box Field Group --', 'mb-elementor-integrator' ),
+			'options' => [],
+		];
+
+		$fields      = $this->get_field_group( null, $object_type );
+		if ( 0 === count( $fields ) ) {
+			return $groups;
+		}
+
+		foreach ( $fields as $field ) {
+			if ( empty( $field['fields'] ) ) {
+				continue;
+			}
+
+			$field_id = '';
+			if ( false !== strpos( $field['id'], '.' ) ) {
+				$field_id = str_replace( '.', ':', $field['id'] );
+			}
+
+			$child_options = [];
+			foreach ( $field['fields'] as $key => $subfield ) {
+				if ( ! empty( $field_id ) ) {
+					$child_options[ "{$field_id}.{$subfield['id']}" ] = $subfield['name'] ?: $subfield['id'];
+					continue;
+				}
+				$child_options[ "{$field['id']}:{$subfield['id']}" ] = $subfield['name'] ?: $subfield['id'];
+			}
+			$label                                    = ! empty( $field['name'] ) ? $field['name'] : $field['group_title'];
+			$label_slug                               = str_replace( '', '-', $label );
+			$groups[ "{$field['id']}-{$label_slug}" ] = [
+				'label'   => $label,
+				'options' => $child_options,
+			];
+		}
+
+		return $groups;
+	}    
+    
+    public function get_value_dynamic_tag( $post_type, $field_id, $template_id = null ) {
+        if ( false !== strpos( $field_id, ':' ) ) {
+            list( $group, $field_id ) = explode( ':', $field_id, 2 );
+        }elseif( false !== strpos( $field_id, '.' ) ) {
+            list( $group, $field_id ) = explode( '.', $field_id, 2 );            
+        }
+        
+        if ( ! isset( $group ) ) { 
+            return false;
+        }
+        
+        $valueField = empty( get_post_type_object( $post_type ) ) ? rwmb_meta( $group, ['object_type' => 'setting'], $post_type ) : rwmb_get_value( $group );            
+        if ( 0 === count( $valueField ) ) {
+            return true;
+        }
+
+        $sub_fields = false !== strpos( $field_id, '.' ) ? explode( '.', $field_id ) : (array) $field_id;            
+        $valueField  = $this->get_value_nested_group( $valueField, $sub_fields, true );   
+
+        if ( false !== is_int( key( $valueField ) ) ) {
+            $valueField = array_shift( $valueField );
+        }
+
+        if ( is_array( $valueField ) ) {
+            $field                                  = rwmb_get_field_settings( $group, [ ], null );
+            $field['fields']                        = array_combine( array_column( $field['fields'], 'id' ), $field['fields'] );
+            $field['fields'][ $field_id ]['fields'] = array_combine( array_column( $field['fields'][ $field_id ]['fields'], 'id' ), $field['fields'][ $field_id ]['fields'] );
+            $this->extract_value_dynamic_tag( $valueField, $field['fields'][ $field_id ]['fields'], $template_id );
+            return true;
+        }
+
+        if ( isset( $valueField[ $field_id ] ) && !is_array( $valueField[ $field_id ] ) ) {
+            $valueField = $valueField[ $field_id ];
+        }
+
+        echo $valueField;
+        return true;
+    }
+    
+	public function extract_value_dynamic_tag( $field = [ ], $fieldSetting = [ ], $template_id = null ) {
+        if ( empty( $template_id ) ) {
+            if ( false !== is_int( key( $field ) ) ) {
+                $field = array_shift( $field );
+            }
+            
+            echo '<div class="mbei-group mbei-group-nested">';
+            foreach ( $field as $key => $value ) {
+                if ( isset( $fieldSetting[ $key ] ) && isset( $fieldSetting[ $key ]['mime_type'] ) && 'image' === $fieldSetting[ $key ]['mime_type'] && ! empty( $value ) ) {
+                    echo '<div class="mbei-subfield mbei-subfield--' . $key . '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
+                    continue;
+                }
+                echo '<div class="mbei-subfield mbei-subfield--' . $key . '"> ' . $value . '</div>';
+            }
+            echo '</div>';            
+            return;
+        }
+
+        echo $this->get_placeholder_template( $template_id, [
+            'loop_header'   => '<div class="mbei-sub-group">',
+            'loop_footer'   => '</div>'            
+        ] );
+	}    
 
     public function parse_options( $fields = [ ], $field_group_id = null ) {
         if ( empty( $fields ) || !isset( $fields['fields'] ) || empty( $fields['fields'] ) || empty( $field_group_id ) ) {
@@ -187,19 +304,20 @@ class GroupField {
         return $sub_fields;
     }
 
-    public function get_field_group( $key = null ) {
-        $field_registry = rwmb_get_registry('field');
-        $post_types = $field_registry->get_by_object_type('post');
+    public function get_field_group( $key = null, $object_type = 'post' ) {
+        $field_registry = rwmb_get_registry( 'field' );
+        $post_types = $field_registry->get_by_object_type( $object_type );
 
         $return_fields = [];
         if ( 0 < count( $post_types ) ) {
-            foreach ( $post_types as $fields ) {
+            foreach ( $post_types as $parent_key => $fields ) {
                 // Fields is empty
                 if ( 0 === count( $fields ) ) {
                     continue;
-                }
+                }             
                 // get list field type=group
-                $group_fields = $this->get_field_type_group( $fields );
+                $nested = 'setting' === $object_type ? $parent_key : '';
+                $group_fields = $this->get_field_type_group( $fields, $nested );       
                 if ( 0 === count( $group_fields ) ) {
                     continue;
                 }
@@ -221,8 +339,8 @@ class GroupField {
         return array_filter( $return_fields );
     }
 
-    public function get_list_field_group() {
-        $fields = $this->get_field_group();
+    public function get_list_field_group( $object_type = 'post' ) {
+        $fields = $this->get_field_group( null, $object_type );
         $list = [ ];
         foreach ( $fields as $k => $field ) {
             if ( in_array( $field['id'], $list ) ) {
@@ -232,8 +350,12 @@ class GroupField {
             if ( strpos( $field['id'], '.' ) !== false ) {
                 $field_group = explode( '.', $field['id'] );
                 $is_field_group = array_search( $field_group[0], array_column( $fields, 'id' ) );
-
-                $label_group = !empty( $fields[ $is_field_group ]['name'] ) ? $fields[ $is_field_group ]['name'] : $fields[ $is_field_group ]['group_title'];
+                if ( ! empty( $is_field_group ) ) { 
+                    $label_group = !empty( $fields[ $is_field_group ]['name'] ) ? $fields[ $is_field_group ]['name'] : $fields[ $is_field_group ]['group_title'];
+                }else{
+                    $label_group = str_replace(['-','_'], ' ', ucfirst($field_group[0]));
+                }
+                
                 $list[ $field['id'] ] = (!empty($field['name']) ? $field['name'] : $field['group_title'] ) . ' ( ' . $label_group . ' )';
                 continue;
             }
@@ -363,7 +485,7 @@ class GroupField {
     }
 
     public function display_data_template( $template_id, $data_groups, $data_column, $options = [ 'loop_header' => '', 'loop_footer' => '' ] ) {
-        $content_template = $this->get_template( $template_id );        
+        $content_template = $this->get_template( $template_id );
         $cols = array_keys( $content_template['data'] );
 
         if ( stripos( json_encode( $cols ), '.' ) !== false ) {

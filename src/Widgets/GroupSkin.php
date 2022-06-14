@@ -63,17 +63,28 @@ class GroupSkin extends Skin_Base {
 		$data_column = [];
 
 		$settings = $this->parent->get_settings_for_display();
-		if ( ! isset( $settings['field-group'] ) || empty( $settings['field-group'] ) ) {
+		if ( empty( $settings['object-type'] ) ) {
+			return;
+		}
+
+		if ( $settings['object-type'] === 'post' && ( ! isset( $settings['field-group'] ) || empty( $settings['field-group'] ) ) ) {
+			return;
+		}
+
+		if ( $settings['object-type'] === 'setting' && ( ! isset( $settings['field-group-setting'] ) || empty( $settings['field-group-setting'] ) ) ) {
 			return;
 		}
 
 		// check group nested
-		$field_group = (array) $settings['field-group'];
-		if ( strpos( $settings['field-group'], '.' ) !== false ) {
-			$field_group = explode( '.', $settings['field-group'] );
+		$field_group = $settings['object-type'] === 'post' ? $settings['field-group'] : $settings['field-group-setting'];
+		$field_group = false !== strpos( $field_group, '.' ) ? explode( '.', $field_group ) : (array) $field_group;
+
+		if ( 'setting' === $settings['object-type'] ) {
+			$object_setting = array_shift( $field_group );
 		}
 
-		$data_groups = rwmb_meta( $field_group[0], [], $post->ID );
+		$data_groups = 'post' === $settings['object-type'] ? rwmb_meta( $field_group[0], [], $post->ID ) : rwmb_meta( $field_group[0], [ 'object_type' => 'setting' ], $object_setting );
+
 		array_shift( $field_group );
 		if ( ! empty( $field_group ) ) {
 			$data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
@@ -83,11 +94,13 @@ class GroupSkin extends Skin_Base {
 			return;
 		}
 
-		if ( false !== is_int( key( $data_groups ) ) ) {
-			$data_groups = [ array_shift( $data_groups ) ];
+		if ( false === is_int( key( $data_groups ) ) ) {
+			$data_groups = [ $data_groups ];
 		}
 
-		$fields      = $group_fields->get_field_group( $settings['field-group'] );
+		// $data_groups = 0 < count( $data_groups ) ? [ array_shift( $data_groups ) ] : $data_groups;
+
+		$fields      = $group_fields->get_field_group( 'post' === $settings['object-type'] ? $settings['field-group'] : $settings['field-group-setting'], $settings['object-type'] );
 		$data_column = array_combine( array_column( $fields['fields'], 'id' ), $fields['fields'] );
 
 		$mb_column  = ! empty( $this->parent->get_settings_for_display( 'mb_column' ) ) ? $this->parent->get_settings_for_display( 'mb_column' ) : 3;
@@ -101,10 +114,10 @@ class GroupSkin extends Skin_Base {
 				'loop_footer' => $this->render_loop_footer(),
 			] );
 		} else {
-            $group_fields->display_data_widget( $data_groups, $data_column, [
+			$group_fields->display_data_widget( $data_groups, $data_column, [
 				'loop_header' => $this->render_loop_header(),
 				'loop_footer' => $this->render_loop_footer(),
-            ]);
+			]);
 		}
 		echo $this->render_footer();
 	}

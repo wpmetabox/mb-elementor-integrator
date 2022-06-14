@@ -3,17 +3,17 @@ namespace MBEI\Traits;
 
 use Elementor\Plugin;
 use MBEI\GroupField;
-use Elementor\Controls_Manager;
 
 trait Post {
 	public function get_group() {
 		return 'post';
 	}
-    
+
 	private function get_option_groups() {
 		$document = Plugin::instance()->documents->get_current();
 		if ( ! empty( $document ) && 'metabox_group_template' === $document->get_type() ) {
-			return $this->get_option_field_group();
+			$group_field = new GroupField();
+			return $group_field->get_option_dynamic_tag();
 		}
 
 		$groups = [
@@ -38,48 +38,6 @@ trait Post {
 			$groups[] = [
 				'label'   => $post_type_object->labels->singular_name,
 				'options' => $options,
-			];
-		}
-
-		return $groups;
-	}
-
-	private function get_option_field_group() {
-		$groups[] = [
-			'label'   => __( '-- Meta Box Field Group --', 'mb-elementor-integrator' ),
-			'options' => [],
-		];
-
-		$group_field = new GroupField();
-		$fields      = $group_field->get_field_group();
-
-		if ( 0 === count( $fields ) ) {
-			return $groups;
-		}
-
-		foreach ( $fields as $field ) {
-			if ( empty( $field['fields'] ) ) {
-				continue;
-			}
-
-			$field_id = '';
-			if ( false !== strpos( $field['id'], '.' ) ) {
-				$field_id = str_replace( '.', ':', $field['id'] );
-			}
-
-			$child_options = [];
-			foreach ( $field['fields'] as $key => $subfield ) {
-				if ( ! empty( $field_id ) ) {
-					$child_options[ "{$field_id}.{$subfield['id']}" ] = $subfield['name'] ?: $subfield['id'];
-					continue;
-				}
-				$child_options[ "{$field['id']}:{$subfield['id']}" ] = $subfield['name'] ?: $subfield['id'];
-			}
-			$label                                    = ! empty( $field['name'] ) ? $field['name'] : $field['group_title'];
-			$label_slug                               = str_replace( '', '-', $label );
-			$groups[ "{$field['id']}-{$label_slug}" ] = [
-				'label'   => $label,
-				'options' => $child_options,
 			];
 		}
 
@@ -133,73 +91,21 @@ trait Post {
 		if ( false === strpos( $key, ':' ) ) {
 			return rwmb_meta( $key );
 		}
-		list( $post_type, $field_id ) = explode( ':', $key );
-        if ( empty( get_post_type_object( $post_type ) ) ) { 
-            $valueField = rwmb_get_value( $post_type );            
-            if ( 0 < count( $valueField ) ) {                
-                $sub_fields  = explode( '.', $field_id );
-                $group_field = new GroupField();
-                $valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields, true );   
-                
-                if (false !== is_int( key( $valueField ) ) ) {
-                    $valueField = array_shift( $valueField );
-                }
-                
-                if ( is_array( $valueField ) ) {
-					$field                                  = rwmb_get_field_settings( $post_type, [ ], null );
-					$field['fields']                        = array_combine( array_column( $field['fields'], 'id' ), $field['fields'] );
-					$field['fields'][ $field_id ]['fields'] = array_combine( array_column( $field['fields'][ $field_id ]['fields'], 'id' ), $field['fields'][ $field_id ]['fields'] );
-					$this->extract_value( $valueField, $field['fields'][ $field_id ]['fields'] );
-                    return;
-                }
-                
-                if ( isset( $valueField[ $field_id ] ) && !is_array( $valueField[ $field_id ] ) ) {
-                    $valueField = $valueField[ $field_id ];
-                }
-                
-                echo $valueField;
-                return;
-            }
-            
-            return null;
-        }
-        
-        $field = rwmb_get_field_settings( $field_id, [], null );
 
-        if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {
-            echo rwmb_get_value( $field_id );
-        } else {
-            rwmb_the_value( $field_id );
-        }        
-	}
+		list( $post_type, $field_id ) = explode( ':', $key, 2 );
 
-	private function extract_value( $field = [ ], $fieldSetting = [ ], $echo = true ) {
+		$group_field = new GroupField();
+		$value       = $group_field->get_value_dynamic_tag( $post_type, $field_id, $this->get_settings( 'mb_skin_template' ) );
+		if ( $value ) {
+			return;
+		}
 
-		if ( false === $echo ) {
-			return $field;
-		}                
+		$field = rwmb_get_field_settings( $field_id, [], null );
+		if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {
+			rwmb_the_value( $field_id );
+			return;
+		}
 
-        if ( empty( $this->get_settings( 'mb_skin_template' ) ) ) {
-            if ( false !== is_int( key( $field ) ) ) {
-                $field = array_shift( $field );
-            }
-            
-            echo '<div class="mbei-group mbei-group-nested">';
-            foreach ( $field as $key => $value ) {
-                if ( isset( $fieldSetting[ $key ] ) && isset( $fieldSetting[ $key ]['mime_type'] ) && 'image' === $fieldSetting[ $key ]['mime_type'] && ! empty( $value ) ) {
-                    echo '<div class="mbei-subfield mbei-subfield--' . $key . '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
-                    continue;
-                }
-                echo '<div class="mbei-subfield mbei-subfield--' . $key . '"> ' . $value . '</div>';
-            }
-            echo '</div>';            
-            return;
-        }
-
-        $group_fields = new GroupField();
-        echo $group_fields->get_placeholder_template( $this->get_settings('mb_skin_template'), [
-            'loop_header'   => '<div class="mbei-sub-group">',
-            'loop_footer'   => '</div>'            
-        ] );
+		rwmb_the_value( $field_id );
 	}
 }

@@ -78,23 +78,48 @@ class MBGroup extends Widget_Base {
 	 * @access protected
 	 */
 	public function register_controls() {
-        
+
 		$this->start_controls_section( 'section_metabox', [
 			'label' => esc_html__( 'Meta Box Group', 'mb-elementor-integrator' ),
 		] );
-        
-        $this->update_control( '_skin', [
-            'label' => esc_html__( 'Type', 'mb-elementor-integrator' )
-        ] );
+
+		$this->update_control( '_skin', [
+			'label' => esc_html__( 'Type', 'mb-elementor-integrator' ),
+		] );
+
+		$this->add_control( 'object-type', [
+			'label'   => esc_html__( 'Object Type', 'mb-elementor-integrator' ),
+			'type'    => Controls_Manager::SELECT,
+			'options' => [
+				'post'    => esc_html__( 'Post', 'mb-elementor-integrator' ),
+				'setting' => esc_html__( 'Settings page', 'mb-elementor-integrator' ),
+			],
+			'default' => 'post',
+		] );
 
 		$group_fields = new GroupField();
-		$options      = $group_fields->get_list_field_group();
+		$options      = $group_fields->get_list_field_group( 'post' );
 		$this->add_control( 'field-group', [
 			'label'       => esc_html__( 'Group', 'mb-elementor-integrator' ),
 			'type'        => Controls_Manager::SELECT2,
 			'label_block' => true,
 			'options'     => $options,
 			'default'     => key( $options ),
+			'condition'   => [
+				'object-type' => 'post',
+			],
+		] );
+
+		$options = $group_fields->get_list_field_group( 'setting' );
+		$this->add_control( 'field-group-setting', [
+			'label'       => esc_html__( 'Group', 'mb-elementor-integrator' ),
+			'type'        => Controls_Manager::SELECT2,
+			'label_block' => true,
+			'options'     => $options,
+			'default'     => key( $options ),
+			'condition'   => [
+				'object-type' => 'setting',
+			],
 		] );
 
 		$this->add_control( 'mb_skin_template', [
@@ -198,17 +223,28 @@ class MBGroup extends Widget_Base {
 		$data_column = [];
 
 		$settings = $this->get_settings_for_display();
-		if ( ! isset( $settings['field-group'] ) || empty( $settings['field-group'] ) ) {
+		if ( empty( $settings['object-type'] ) ) {
+			return;
+		}
+
+		if ( $settings['object-type'] === 'post' && ( ! isset( $settings['field-group'] ) || empty( $settings['field-group'] ) ) ) {
+			return;
+		}
+
+		if ( $settings['object-type'] === 'setting' && ( ! isset( $settings['field-group-setting'] ) || empty( $settings['field-group-setting'] ) ) ) {
 			return;
 		}
 
 		// check group nested
-		$field_group = (array) $settings['field-group'];
-		if ( strpos( $settings['field-group'], '.' ) !== false ) {
-			$field_group = explode( '.', $settings['field-group'] );
+		$field_group = $settings['object-type'] === 'post' ? $settings['field-group'] : $settings['field-group-setting'];
+		$field_group = false !== strpos( $field_group, '.' ) ? explode( '.', $field_group ) : (array) $field_group;
+
+		if ( 'setting' === $settings['object-type'] ) {
+			$object_setting = array_shift( $field_group );
 		}
 
-		$data_groups = rwmb_meta( $field_group[0], [], $post->ID );
+		$data_groups = 'post' === $settings['object-type'] ? rwmb_meta( $field_group[0], [], $post->ID ) : rwmb_meta( $field_group[0], [ 'object_type' => 'setting' ], $object_setting );
+
 		array_shift( $field_group );
 		if ( ! empty( $field_group ) ) {
 			$data_groups = $group_fields->get_value_nested_group( $data_groups, $field_group );
@@ -222,7 +258,7 @@ class MBGroup extends Widget_Base {
 			$data_groups = [ $data_groups ];
 		}
 
-		$fields      = $group_fields->get_field_group( $settings['field-group'] );
+		$fields      = $group_fields->get_field_group( 'post' === $settings['object-type'] ? $settings['field-group'] : $settings['field-group-setting'], $settings['object-type'] );
 		$data_column = array_combine( array_column( $fields['fields'], 'id' ), $fields['fields'] );
 
 		echo $this->render_header();
@@ -232,10 +268,10 @@ class MBGroup extends Widget_Base {
 				'loop_footer' => $this->render_loop_footer(),
 			] );
 		} else {
-            $group_fields->display_data_widget( $data_groups, $data_column, [
+			$group_fields->display_data_widget( $data_groups, $data_column, [
 				'loop_header' => $this->render_loop_header(),
 				'loop_footer' => $this->render_loop_footer(),
-            ]);
+			]);
 		}
 		echo $this->render_footer();
 	}
