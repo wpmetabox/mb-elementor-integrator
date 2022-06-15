@@ -43,8 +43,46 @@ trait Settings {
 		if ( ! $key ) {
 			return null;
 		}
-		list( $option_name, $field_id ) = explode( ':', $key );
-		return rwmb_meta( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
+		list( $option_name, $field_id ) = explode( ':', $key, 2 );
+        if ( false === strpos( $field_id, '.' ) || false === strpos( $field_id, ':' ) ) {
+            return rwmb_meta( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
+        }
+        
+        // Get data from group or sub-group
+        list( $field_id, $sub_fields ) = false !== strpos( $field_id, ':' ) ? explode( ':', $field_id, 2 ) : explode( '.', $field_id );               
+        $sub_fields = false !== strpos( $sub_fields, '.' ) ? explode( '.', $sub_fields, 2 ) : (array) $sub_fields;
+        
+        $valueField = rwmb_meta( $field_id, [ 'object_type' => 'setting' ], $option_name );
+        if ( 0 < count( $valueField ) ) {
+			if ( true === is_int( key( $valueField ) ) ) {
+				$valueField = array_shift( $valueField );
+			}
+        }
+
+        $field = rwmb_get_field_settings( $field_id, [ 'object_type' => 'setting' ], $option_name );
+        $field['fields'] = array_combine( array_column( $field['fields'], 'id' ), $field['fields'] );
+        
+        if ( 1 == count( $sub_fields ) ) {
+            if ( $field['fields'][ end( $sub_fields ) ]['mime_type'] !== 'image' ) {
+                return $valueField[ end( $sub_fields ) ];
+            }
+            
+            $image_id = $valueField[ end( $sub_fields ) ];
+
+        }
+               
+        $group_field = new GroupField();
+        $valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields, true );            
+        if ( false !== is_int( key( $valueField ) ) ) {
+            $valueField = array_shift( $valueField );
+        }
+        $image_id = $valueField;
+        
+        $image    = wp_get_attachment_image_src( $image_id, 'full' );
+        return [
+            'ID'       => $image_id,
+            'full_url' => $image[0],
+        ];        
 	}
 
 	private function the_value() {
