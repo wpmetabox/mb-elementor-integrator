@@ -290,6 +290,34 @@ class GroupField {
             'loop_footer'   => '</div>'            
         ] );
 	}    
+    
+    public function get_image_for_dynamic_tag( $value, $field_type ) {
+        if ( empty( $value ) ) {
+            return;
+        }
+
+        $image = $value;
+        switch ( $field_type ) {
+            case 'image':
+            case 'image_advanced':
+            case 'image_select':
+            case 'image_upload':                
+                $image = [
+                    'ID'       => $value['ID'],
+                    'full_url' => $value['full_url'],
+                ];
+                break;
+            case 'single_image':
+                $image_src    = wp_get_attachment_image_src( $value, 'full' );
+                $image = [
+                    'ID'       => $value,
+                    'full_url' => $image_src[0],                    
+                ];
+                break;
+        }
+        
+        return $image;
+    }
 
     public function parse_options( $fields = [ ], $field_group_id = null ) {
         if ( empty( $fields ) || !isset( $fields['fields'] ) || empty( $fields['fields'] ) || empty( $field_group_id ) ) {

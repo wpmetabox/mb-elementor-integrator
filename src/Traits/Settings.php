@@ -39,13 +39,25 @@ trait Settings {
 	}
 
 	private function handle_get_value() {
+        $group_field = new GroupField();
+        
 		$key = $this->get_settings( 'key' );
 		if ( ! $key ) {
 			return null;
 		}
 		list( $option_name, $field_id ) = explode( ':', $key, 2 );
         if ( false === strpos( $field_id, '.' ) && false === strpos( $field_id, ':' ) ) {
-            return rwmb_meta( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
+            $field = rwmb_get_field_settings( $field_id, [ 'object_type' => 'setting' ], $option_name );            
+            $value = rwmb_meta( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
+            
+            if ( $field['mime_type'] === 'image' || $field['type'] === 'image' ) {
+                if ( is_array( $value ) && true === is_int( key( $value ) ) ) {
+                    $value = array_shift( $value );
+                }            
+                return $group_field->get_image_for_dynamic_tag( $value, $field['type'] );                
+            }           
+            
+            return $value;
         }
         
         // Get data from group or sub-group
@@ -66,23 +78,38 @@ trait Settings {
             if ( $field['fields'][ end( $sub_fields ) ]['mime_type'] !== 'image' ) {
                 return $valueField[ end( $sub_fields ) ];
             }
-            
+
             $image_id = $valueField[ end( $sub_fields ) ];
 
         }
-               
-        $group_field = new GroupField();
-        $valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields, true );            
-        if ( false !== is_int( key( $valueField ) ) ) {
+        
+        $clone_field = $field;
+        $type = '';
+        foreach ( $sub_fields as $index => $sub_field ) {
+            if ( !isset( $clone_field['fields'][ $sub_field ] ) ) {
+                break;
+            }
+
+            if ( $index < count( $sub_fields ) - 1 ) {
+                $clone_field = $clone_field['fields'][ $sub_field ];
+                $clone_field['fields'] = array_combine( array_column( $clone_field['fields'], 'id' ), $clone_field['fields'] );
+                continue;
+            }
+
+           $type = $clone_field['fields'][ $sub_field ]['type'];            
+        }
+        
+        if ( empty( $type ) ) {
+            return;
+        }
+
+        $valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields, true );
+        if ( false !== is_int( key( $valueField ) ) ) {            
             $valueField = array_shift( $valueField );
         }
         $image_id = $valueField;
         
-        $image    = wp_get_attachment_image_src( $image_id, 'full' );
-        return [
-            'ID'       => $image_id,
-            'full_url' => $image[0],
-        ];        
+        return $group_field->get_image_for_dynamic_tag( $image_id, $type );      
 	}
 
 	private function the_value() {
