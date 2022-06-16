@@ -44,7 +44,7 @@ trait Settings {
 			return null;
 		}
 		list( $option_name, $field_id ) = explode( ':', $key, 2 );
-        if ( false === strpos( $field_id, '.' ) || false === strpos( $field_id, ':' ) ) {
+        if ( false === strpos( $field_id, '.' ) && false === strpos( $field_id, ':' ) ) {
             return rwmb_meta( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
         }
         
