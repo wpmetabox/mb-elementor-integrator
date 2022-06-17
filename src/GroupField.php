@@ -548,6 +548,7 @@ class GroupField {
                     
                     //Display text from sub field group.
                     if ( !isset( $data_sub_column[ $tmp_col[ 0 ] ]['mime_type'] ) || 'image' !== $data_sub_column[ $tmp_col[ 0 ] ]['mime_type'] ) {
+                        $content_template['data'][ $col ]['content'] = str_replace("'", "&#8217;", $content_template['data'][ $col ]['content']);
                         $content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
                         continue;
                     }
@@ -594,7 +595,7 @@ class GroupField {
                 
                 //Display field image for group
                 if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {
-                    $html_image = '';
+                    $search_data = [];
                     libxml_use_internal_errors( true );
                     $dom = new \DOMDocument();
                     $dom->loadHTML( $content );
@@ -602,23 +603,28 @@ class GroupField {
                         if ( false === strpos( $img->getAttribute( 'srcset' ), $content_template['data'][ $col ]['content'] ) ) {
                             continue;
                         }
-                        $html_image = str_replace('>', ' />', $dom->saveHTML( $img ) );
+                        $search_data = [
+                            'html' => str_replace('>', ' />', $dom->saveHTML( $img ) ),
+                            'width' => $img->getAttribute( 'width' ),
+                            'height' => $img->getAttribute( 'height' ),
+                            'class' => $img->getAttribute( 'class' )
+                        ];                        
                     }
                     
-                    if ( empty( $html_image ) ) {
+                    if ( empty( $search_data ) ) {
                         continue;
                     }
                     
-                    $values = is_array( $data_group[ $col ] ) ? $data_group[ $col ] : (array) $data_group[ $col ];                   
+                    $values = is_array( $data_group[ $col ] ) ? $data_group[ $col ] : (array) $data_group[ $col ];                                      
                     $content_image = '';
                     foreach ( $values as $val ) {
                         $image = $this->get_image_for_dynamic_tag( $val, $data_column[ $col ]['type'] );
-                        if ( !isset( $image['full_url'] ) ) {
+                        if ( !isset( $image['ID'] ) ) {
                             continue;
-                        }
-                        $content_image .= str_replace( $content_template['data'][ $col ]['content'], self::change_url_ssl($image['full_url']), $html_image );                                                 
+                        }                        
+                        $content_image .= wp_get_attachment_image( $image['ID'], [ $search_data['width'], $search_data['height'] ], false, [ 'class'=> $search_data['class'] ]);
                     }
-                    $content = str_replace( $html_image, $content_image, $content );            
+                    $content = str_replace( $search_data['html'], $content_image, $content );            
                     continue;
                 }                                
                 
@@ -639,17 +645,19 @@ class GroupField {
                     $this->render_nested_group( $data_group[ $col ], $data_sub_column );
                     $value = ob_get_contents();
                     ob_end_clean();
-
+                    
                     $content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
                     continue;
                 }
-
+                
                 ob_start();
                 $this->display_field( $data_group[ $col ], $data_column[ $col ], true );
                 $value = ob_get_contents();
-                ob_end_clean();
-
-                $content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
+                ob_end_clean();              
+                
+                $content_template['data'][ $col ]['content'] = str_replace("'", "&#8217;", $content_template['data'][ $col ]['content']);
+                $content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );                               
+                
             }
             echo $content;
         }
