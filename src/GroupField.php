@@ -591,11 +591,40 @@ class GroupField {
                     $content = str_replace($search_data['html'], $value, $content);
                     continue;
                 }
-
-                //Get content field group
-                if ( 'image' !== $data_column[ $col ]['mime_type'] && is_array( $data_group[ $col ] ) && !empty( $data_group[ $col ] ) ) {
-                    $data_sub_column = array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] );
+                
+                //Display field image for group
+                if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {
+                    $html_image = '';
+                    libxml_use_internal_errors( true );
+                    $dom = new \DOMDocument();
+                    $dom->loadHTML( $content );
+                    foreach ( $dom->getElementsByTagName( 'img' ) as $i => $img ) {
+                        if ( false === strpos( $img->getAttribute( 'srcset' ), $content_template['data'][ $col ]['content'] ) ) {
+                            continue;
+                        }
+                        $html_image = str_replace('>', ' />', $dom->saveHTML( $img ) );
+                    }
                     
+                    if ( empty( $html_image ) ) {
+                        continue;
+                    }
+                    
+                    $values = is_array( $data_group[ $col ] ) ? $data_group[ $col ] : (array) $data_group[ $col ];                   
+                    $content_image = '';
+                    foreach ( $values as $val ) {
+                        $image = $this->get_image_for_dynamic_tag( $val, $data_column[ $col ]['type'] );
+                        if ( !isset( $image['full_url'] ) ) {
+                            continue;
+                        }
+                        $content_image .= str_replace( $content_template['data'][ $col ]['content'], self::change_url_ssl($image['full_url']), $html_image );                                                 
+                    }
+                    $content = str_replace( $html_image, $content_image, $content );            
+                    continue;
+                }                                
+                
+                //Get content field group
+                if ( is_array( $data_group[ $col ] ) && !empty( $data_group[ $col ] ) ) {
+                    $data_sub_column = array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] );
                     if ( !empty( $content_template['data'][ $col ]['template'] ) ) {
                         ob_start();
                         $this->display_data_template( $content_template['data'][ $col ]['template'], $data_group[ $col ], $data_sub_column, $options );
@@ -612,36 +641,6 @@ class GroupField {
                     ob_end_clean();
 
                     $content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
-                    continue;
-                }
-                
-                //Display field image for group
-                if ( 'image' === $data_column[ $col ]['mime_type'] ) {
-                    $search_data = [];
-                    libxml_use_internal_errors( true );
-                    $dom = new \DOMDocument();
-                    $dom->loadHTML( $content );
-                    foreach ( $dom->getElementsByTagName( 'img' ) as $i => $img ) {
-                        if ( false === strpos( $img->getAttribute( 'srcset' ), $content_template['data'][ $col ]['content'] ) ) {
-                            continue;
-                        }
-                        $html_image = str_replace('>', ' />', $dom->saveHTML( $img ) );
-                    }
-                    
-                    if ( !isset( $html_image ) ) {
-                        continue;
-                    }
-                    
-                    $values = is_array( $data_group[ $col ] ) ? $data_group[ $col ] : (array) $data_group[ $col ];                   
-                    $content_image = '';
-                    foreach ( $values as $val ) {
-                        $image = $this->get_image_for_dynamic_tag( $val, $data_column[ $col ]['type'] );
-                        if ( !isset( $image['full_url'] ) ) {
-                            continue;
-                        }
-                        $content_image .= str_replace( $content_template['data'][ $col ]['content'], $image['full_url'], $html_image );
-                    }
-                    $content = str_replace( $html_image, $content_image, $content );
                     continue;
                 }
 
