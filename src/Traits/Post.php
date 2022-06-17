@@ -93,12 +93,30 @@ trait Post {
 		}
 
 		list( $post_type, $field_id ) = explode( ':', $key, 2 );
-
+        
 		$group_field = new GroupField();
 		$value       = $group_field->get_value_dynamic_tag( $post_type, $field_id, $this->get_settings( 'mb_skin_template' ) );
 		if ( $value ) {
 			return;
 		}
+        
+        if ( empty( get_post_type_object( $post_type ) ) ) {
+            $valueField = rwmb_get_value( $post_type );
+            if ( 0 == count( $valueField ) ) {
+                return;
+            }
+            
+            if ( false !== is_int( key( $valueField ) ) ) {
+                $valueField = array_shift( $valueField );
+            }
+            
+            if ( !isset( $valueField[ $field_id ] ) ) {
+                return;
+            }
+            
+            echo $valueField[ $field_id ];
+            return;
+        }        
 
 		$field = rwmb_get_field_settings( $field_id, [], null );
 		if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {

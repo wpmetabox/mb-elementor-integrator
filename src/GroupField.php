@@ -231,7 +231,7 @@ class GroupField {
     public function get_value_dynamic_tag( $post_type, $field_id, $template_id = null ) {
         if ( false !== strpos( $field_id, ':' ) ) {
             list( $group, $field_id ) = explode( ':', $field_id, 2 );
-        }elseif( false !== strpos( $field_id, '.' ) ) {
+        } elseif ( false !== strpos( $field_id, '.' ) ) {
             list( $group, $field_id ) = explode( '.', $field_id, 2 );            
         }
         
@@ -240,7 +240,7 @@ class GroupField {
         }
         
         $valueField = empty( get_post_type_object( $post_type ) ) ? rwmb_meta( $group, ['object_type' => 'setting'], $post_type ) : rwmb_get_value( $group );            
-        if ( 0 === count( $valueField ) ) {
+        if ( 0 == count( $valueField ) ) {
             return true;
         }
 
