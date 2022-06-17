@@ -109,10 +109,20 @@ trait Post {
             if ( false !== is_int( key( $valueField ) ) ) {
                 $valueField = array_shift( $valueField );
             }
-            
+                       
             if ( !isset( $valueField[ $field_id ] ) ) {
                 return;
             }
+            
+            if ( is_array( $valueField[ $field_id ] ) ) {
+                $field                                  = rwmb_get_field_settings( $post_type, [ ], null );
+                $field['fields']                        = array_combine( array_column( $field['fields'], 'id' ), $field['fields'] );
+                $field['fields'][ $field_id ]['fields'] = array_combine( array_column( $field['fields'][ $field_id ]['fields'], 'id' ), $field['fields'][ $field_id ]['fields'] );
+                
+                $group_field = new GroupField();
+                $group_field->extract_value_dynamic_tag( $valueField[ $field_id ], $field['fields'][ $field_id ]['fields'], null );
+                return;
+            }            
             
             echo $valueField[ $field_id ];
             return;
