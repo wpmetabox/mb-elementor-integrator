@@ -119,7 +119,7 @@ trait Settings {
 		}
 		list( $option_name, $field_id ) = explode( ':', $key, 2 );
 		$group_field                    = new GroupField();
-		$value                          = $group_field->get_value_dynamic_tag( $option_name, $field_id, $this->get_settings( 'mb_skin_template' ) );
+		$value                          = $group_field->get_value_dynamic_tag( $option_name, $field_id, $this->get_settings( 'mb_skin_template' ), 'setting' );
 		if ( $value ) {
 			return;
 		}

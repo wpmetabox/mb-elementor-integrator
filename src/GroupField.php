@@ -228,18 +228,28 @@ class GroupField {
 		return $groups;
 	}    
     
-    public function get_value_dynamic_tag( $post_type, $field_id, $template_id = null ) {
+    public function get_value_dynamic_tag( $post_type, $field_id, $template_id = null, $object_type = 'post' ) {
         if ( false !== strpos( $field_id, ':' ) ) {
             list( $group, $field_id ) = explode( ':', $field_id, 2 );
         } elseif ( false !== strpos( $field_id, '.' ) ) {
             list( $group, $field_id ) = explode( '.', $field_id, 2 );            
         }
         
+        if ( !isset( $group ) && empty( get_post_type_object( $post_type ) ) ) {
+            $group = $post_type;
+        }
+        
         if ( ! isset( $group ) ) { 
             return false;
         }
         
-        $valueField = empty( get_post_type_object( $post_type ) ) ? rwmb_meta( $group, ['object_type' => 'setting'], $post_type ) : rwmb_get_value( $group );            
+        if ( 'setting' === $object_type ) {
+            $valueField = rwmb_meta( $group, ['object_type' => 'setting'], $post_type );
+        } else {
+            $valueField = empty( get_post_type_object( $post_type ) ) ? rwmb_get_value( $post_type ) : rwmb_get_value( $group );
+            $field_id = empty( get_post_type_object( $post_type ) ) ? $group . '.' . $field_id : $field_id;
+        }
+        
         if ( 0 == count( $valueField ) ) {
             return true;
         }

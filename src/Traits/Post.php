@@ -52,35 +52,25 @@ trait Post {
 		if ( false === strpos( $key, ':' ) ) {
 			return rwmb_meta( $key );
 		}
-		list( $post_type, $field_id ) = explode( ':', $key );
+        
+		list( $post_type, $field_id ) = explode( ':', $key, 2 );
 		if ( ! empty( get_post_type_object( $post_type ) ) ) {
 			return rwmb_meta( $field_id );
-		}
-
-		$valueField = rwmb_get_value( $post_type );
-		if ( 0 < count( $valueField ) ) {
-			if ( true === is_int( key( $valueField ) ) ) {
-				$valueField = array_shift( $valueField );
-			}
-
-			if ( false !== strpos( $field_id, '.' ) ) {
-				$sub_fields  = explode( '.', $field_id );
-				$group_field = new GroupField();
-				$valueField  = $group_field->get_value_nested_group( $valueField, $sub_fields, true );
-				if ( false !== is_int( key( $valueField ) ) ) {
-					$valueField = array_shift( $valueField );
-				}
-				$field_id = end( $sub_fields );
-			}
-
-			$image_id = $valueField[ $field_id ];
-			$image    = wp_get_attachment_image_src( $image_id, 'full' );
+		}        
+        
+		$group_field = new GroupField();
+        ob_start();
+		$group_field->get_value_dynamic_tag( $post_type, $field_id, $this->get_settings( 'mb_skin_template' ) );
+        $valueField = ob_get_contents();
+        ob_end_clean();
+                
+		if ( !empty( $valueField ) ) {
+			$image    = wp_get_attachment_image_src( $valueField, 'full' );
 			return [
-				'ID'       => $image_id,
+				'ID'       => $valueField,
 				'full_url' => $image[0],
 			];
-		}
-
+		}        
 	}
 
 	private function the_value() {
@@ -99,34 +89,6 @@ trait Post {
 		if ( $value ) {
 			return;
 		}
-        
-        if ( empty( get_post_type_object( $post_type ) ) ) {
-            $valueField = rwmb_get_value( $post_type );
-            if ( 0 == count( $valueField ) ) {
-                return;
-            }
-            
-            if ( false !== is_int( key( $valueField ) ) ) {
-                $valueField = array_shift( $valueField );
-            }
-                       
-            if ( !isset( $valueField[ $field_id ] ) ) {
-                return;
-            }
-            
-            if ( is_array( $valueField[ $field_id ] ) ) {
-                $field                                  = rwmb_get_field_settings( $post_type, [ ], null );
-                $field['fields']                        = array_combine( array_column( $field['fields'], 'id' ), $field['fields'] );
-                $field['fields'][ $field_id ]['fields'] = array_combine( array_column( $field['fields'][ $field_id ]['fields'], 'id' ), $field['fields'][ $field_id ]['fields'] );
-                
-                $group_field = new GroupField();
-                $group_field->extract_value_dynamic_tag( $valueField[ $field_id ], $field['fields'][ $field_id ]['fields'], null );
-                return;
-            }            
-            
-            echo $valueField[ $field_id ];
-            return;
-        }        
 
 		$field = rwmb_get_field_settings( $field_id, [], null );
 		if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {
