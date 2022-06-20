@@ -184,7 +184,7 @@ class MBGroup extends Widget_Base {
 					$this->render_nested_group( $value, $data_column[ $key ]['fields'], $group_fields );
 					continue;
 				}
-					$group_fields->display_field( $value, $data_column[ $key ] );
+                $group_fields->display_field( $value, $data_column[ $key ] );
 				echo '</div>';
 			}
 			echo '</div>';

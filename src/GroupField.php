@@ -139,10 +139,14 @@ class GroupField {
                 $key = end( $key );
             }
             
+            if ( empty( $key ) ) {
+                $key = $post_type;
+            }
+            
             if ( isset( $tag_data_content['url'] ) ) {
                 $data_replace[ $key ]['content'] = self::change_url_ssl( $tag_data_content['url'] );
-            } elseif ( isset( $tag_data['settings']['mb_skin_template'] ) ) { 
-                $data_replace[ $key ]['content'] = $this->get_placeholder_template( $tag_data['settings']['mb_skin_template'] );
+            } elseif ( isset( $tag_data['settings']['mb_skin_template'] ) ) {
+                $data_replace[ $key ]['content'] = $this->get_placeholder_template( $tag_data['settings']['mb_skin_template'] );                
             } else {
                 $data_replace[ $key ]['content'] = $tag_data_content;
             }
@@ -604,13 +608,14 @@ class GroupField {
                 }
                 
                 //Display field image for group
-                if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {
+                if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {                    
                     $search_data = [];
                     libxml_use_internal_errors( true );
                     $dom = new \DOMDocument();
                     $dom->loadHTML( $content );
                     foreach ( $dom->getElementsByTagName( 'img' ) as $i => $img ) {
-                        if ( false === strpos( $img->getAttribute( 'srcset' ), $content_template['data'][ $col ]['content'] ) ) {
+                        $tmp_image = substr( $content_template['data'][ $col ]['content'], 0, strlen( $content_template['data'][ $col ]['content'] ) - 4 );
+                        if ( false === strpos( $img->getAttribute( 'srcset' ), $tmp_image ) && false === strpos( $img->getAttribute( 'src' ), $tmp_image ) ) {
                             continue;
                         }
                         $search_data = [
@@ -619,11 +624,11 @@ class GroupField {
                             'height' => $img->getAttribute( 'height' ),
                             'class' => $img->getAttribute( 'class' )
                         ];                        
-                    }
+                    }                
                     
                     if ( empty( $search_data ) ) {
                         continue;
-                    }
+                    }                    
                     
                     $values = is_array( $data_group[ $col ] ) ? $data_group[ $col ] : (array) $data_group[ $col ];                                      
                     $content_image = '';
