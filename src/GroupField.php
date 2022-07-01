@@ -239,7 +239,7 @@ class GroupField {
             list( $group, $field_id ) = explode( '.', $field_id, 2 );            
         }
         
-        if ( !isset( $group ) && empty( get_post_type_object( $post_type ) ) ) {
+        if ( !isset( $group ) && empty( get_post_type_object( $post_type ) ) && 'setting' !== $object_type ) {
             $group = $post_type;
         }
         
