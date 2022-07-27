@@ -254,7 +254,7 @@ class GroupField {
             $field_id = empty( get_post_type_object( $post_type ) ) ? $group . '.' . $field_id : $field_id;
         }
         
-        if ( 0 == count( $valueField ) ) {
+        if ( is_array( $valueField ) && 0 == count( $valueField ) ) {
             return true;
         }
 
