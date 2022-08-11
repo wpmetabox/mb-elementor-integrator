@@ -51,6 +51,9 @@ Install **Meta Box - Elementor Integrator** extension
 
 == Changelog ==
 
+= 2.1.2 - 2022-08-11 =
+- Fix count() error
+
 = 2.1.1 - 2022-07-14 =
 - Fix not working with settings page
 
