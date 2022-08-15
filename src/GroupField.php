@@ -254,7 +254,7 @@ class GroupField {
             $field_id = empty( get_post_type_object( $post_type ) ) ? $group . '.' . $field_id : $field_id;
         }
         
-        if ( is_array( $valueField ) && 0 == count( $valueField ) ) {
+        if ( empty( $valueField ) || ( is_array( $valueField ) && 0 == count( $valueField ) ) ) {
             return true;
         }
 
@@ -267,8 +267,8 @@ class GroupField {
 
         if ( is_array( $valueField ) ) {
             $field                                  = rwmb_get_field_settings( $group, [ ], null );
-            $field['fields']                        = array_combine( array_column( $field['fields'], 'id' ), $field['fields'] );
-            $field['fields'][ $field_id ]['fields'] = array_combine( array_column( $field['fields'][ $field_id ]['fields'], 'id' ), $field['fields'][ $field_id ]['fields'] );
+            $field['fields']                        = array_combine( (array) array_column( $field['fields'], 'id' ), $field['fields'] );
+            $field['fields'][ $field_id ]['fields'] = array_combine( (array) array_column( $field['fields'][ $field_id ]['fields'], 'id' ), $field['fields'][ $field_id ]['fields'] );
             $this->extract_value_dynamic_tag( $valueField, $field['fields'][ $field_id ]['fields'], $template_id );
             return true;
         }
