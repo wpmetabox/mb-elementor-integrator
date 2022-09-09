@@ -32,6 +32,7 @@ trait Post {
 			if ( ! $post_type_object ) {
 				continue;
 			}
+			$options = [];
 			foreach ( $list as $field ) {
 				$options[ "{$post_type}:{$field['id']}" ] = $field['name'] ?: $field['id'];
 			}
