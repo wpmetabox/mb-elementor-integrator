@@ -68,7 +68,7 @@ trait Post {
 			$image    = wp_get_attachment_image_src( $valueField, 'full' );
 			return [
 				'ID'       => $valueField,
-				'full_url' => $image[0],
+				'full_url' => isset( $image[0] ) ? $image[0] : '',
 			];
 		}        
 	}
