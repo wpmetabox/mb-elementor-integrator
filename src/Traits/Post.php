@@ -66,10 +66,13 @@ trait Post {
                 
 		if ( !empty( $valueField ) ) {
 			$image    = wp_get_attachment_image_src( $valueField, 'full' );
-			return [
-				'ID'       => $valueField,
-				'full_url' => isset( $image[0] ) ? $image[0] : '',
-			];
+			if( !empty( $image ) ){
+				return [
+					'ID'       => $valueField,
+					'full_url' => $image[0],
+				];
+			}
+			return $valueField;
 		}        
 	}
 
