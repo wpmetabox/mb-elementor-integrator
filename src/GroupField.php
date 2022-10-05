@@ -150,6 +150,20 @@ class GroupField {
             } else {
                 $data_replace[ $key ]['content'] = $tag_data_content;
             }
+
+            //Check tag Advanced
+            if ( !empty( $data_replace[ $key ]['content'] ) ) {
+                if ( isset ( $tag_data['settings']['before'] ) && !empty( $tag_data['settings']['before'] ) ) {
+                    $data_replace[ $key ]['content'] = wp_kses_post( $tag_data['settings']['before'] ) . $data_replace[ $key ]['content'];
+                }
+
+                if ( isset ( $tag_data['settings']['after'] ) && !empty( $tag_data['settings']['after'] ) ) {
+                    $data_replace[ $key ]['content'] .= wp_kses_post( $tag_data['settings']['after'] );
+                }                
+            }elseif( isset ( $tag_data['settings']['fallback'] ) && !empty( $tag_data['settings']['fallback'] ) ){
+                $data_replace[ $key ]['content'] = $tag_data['settings']['fallback'];
+            }            
+
             $data_replace[ $key ]['template'] = isset( $tag_data['settings']['mb_skin_template'] ) ? $tag_data['settings']['mb_skin_template'] : '';
         }
         
