@@ -6,6 +6,14 @@ use Elementor\Core\DynamicTags\Manager;
 class Loader {
 
 	public function __construct() {
+		add_action( 'init', array( $this, 'init' ), 20 );
+	}
+
+	public function init() {
+		// Check plugin Meta Box is loaded.
+		if ( ! defined( 'RWMB_VER' ) ) {
+			return;
+		}
 
 		// Check plugin elementor is loaded.
 		if ( defined( 'ELEMENTOR_VERSION' ) ) {
@@ -16,14 +24,11 @@ class Loader {
 		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
 			add_action( 'elementor/widgets/register', [ $this, 'register_skins' ] );
 			add_action( 'elementor/theme/register_conditions', [ $this, 'register_conditions' ], 100 );
-			$this->init();
-		}
-	}
 
-	public function init() {
-		$this->register_locations();
-		$this->register_widgets();
-		$this->modules();
+			$this->register_locations();
+			$this->register_widgets();
+			$this->modules();
+		}
 	}
 
 	public function modules() {
