@@ -19,7 +19,9 @@ trait Image {
 		}
 
 		// Single image.
-		if ( isset( $images['ID'] ) ) {
+		if ( count( $images) === 1 ) {
+			$images = $images[array_key_first($images)];
+
 			return [
 				'id'  => $images['ID'],
 				'url' => $images['full_url'],
