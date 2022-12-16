@@ -18,6 +18,13 @@ trait Image {
 			return;
 		}
 
+		if ( isset( $images['ID'] ) && isset( $images['full_url'] ) ) {
+			return [
+				'id'  => $images['ID'],
+				'url' => $images['full_url'],
+			];
+		}
+
 		// Single image.
 		if ( count( $images ) === 1 ) {
 			$images = $images [array_key_first( $images ) ];
