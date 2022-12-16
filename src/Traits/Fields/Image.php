@@ -19,12 +19,12 @@ trait Image {
 		}
 
 		// Single image.
-		if ( count( $images) === 1 ) {
-			$images = $images[array_key_first($images)];
+		if ( count( $images ) === 1 ) {
+			$images = $images [array_key_first( $images ) ];
 
 			return [
 				'id'  => $images['ID'],
-				'url' => $images['full_url'],
+				'url' => isset( $images['url'] ) ? $images['url'] : $images['full_url'],
 			];
 		}
 
@@ -33,6 +33,7 @@ trait Image {
 		foreach ( $images as $image ) {
 			$value[] = [
 				'id' => $image['ID'],
+				'url' => isset( $image['url'] ) ? $image['url'] : $image['full_url'],
 			];
 		}
 

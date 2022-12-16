@@ -57,7 +57,7 @@ trait Post {
 		list( $post_type, $field_id ) = explode( ':', $key, 2 );
 		if ( ! empty( get_post_type_object( $post_type ) ) ) {
 			return rwmb_meta( $field_id );
-		}        
+		}
         
 		$group_field = new GroupField();
         ob_start();
