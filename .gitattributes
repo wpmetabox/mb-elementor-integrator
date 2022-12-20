@@ -12,3 +12,4 @@ Thumbs.db export-ignore
 .gitattributes export-ignore
 .gitignore export-ignore
 .github export-ignore
+phpcs.xml export-ignore

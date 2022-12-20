@@ -23,5 +23,8 @@
   ],
   "autoload": {
   	"psr-4": {"MBEI\\" : "src/"}
+  },
+  "scripts": {
+    "format": "phpcbf src/ && phpcbf src/ --standard=Generic --sniffs=Generic.Arrays.DisallowLongArraySyntax"
   }
 }
