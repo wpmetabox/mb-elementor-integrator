@@ -9,3 +9,4 @@ Thumbs.db
 .gitignore
 composer.json
 README.md
+phpcs.xml
