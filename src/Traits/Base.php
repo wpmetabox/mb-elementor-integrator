@@ -22,9 +22,9 @@ trait Base {
 
 	protected function register_controls() {
 		$this->add_control( 'key', [
-			'label'   => __( 'Field', 'mb-elementor-integrator' ),
-			'type'    => Controls_Manager::SELECT,
-			'groups'  => $this->get_option_groups(),
+			'label'  => __( 'Field', 'mb-elementor-integrator' ),
+			'type'   => Controls_Manager::SELECT,
+			'groups' => $this->get_option_groups(),
 		] );
 	}
 }

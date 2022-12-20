@@ -62,9 +62,9 @@ class Group extends Single {
 	 */
 	public static function get_public_post_types() {
 		$post_types_options = [];
-		$args               = array(
+		$args               = [
 			'public' => true,
-		);
+		];
 		$output             = 'objects'; // names or objects.
 		$post_types         = get_post_types( $args, $output );
 		foreach ( $post_types as $post_type ) {

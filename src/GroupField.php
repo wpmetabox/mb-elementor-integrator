@@ -28,13 +28,13 @@ class GroupField {
                 'post_type' => 'elementor_library',
                 'numberposts' => -1,
                 'post_status' => 'publish',
-                'tax_query' => array(
-                    array(
+                'tax_query' => [
+                    [
                         'taxonomy' => 'elementor_library_type',
                         'field' => 'slug',
                         'terms' => 'metabox_group_template',
-                    ),
-                ),
+                    ],
+                ],
             ] );
             wp_cache_set( $cache_key, $templates );
         }

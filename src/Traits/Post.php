@@ -53,28 +53,28 @@ trait Post {
 		if ( false === strpos( $key, ':' ) ) {
 			return rwmb_meta( $key );
 		}
-        
+
 		list( $post_type, $field_id ) = explode( ':', $key, 2 );
 		if ( ! empty( get_post_type_object( $post_type ) ) ) {
 			return rwmb_meta( $field_id );
 		}
-        
+
 		$group_field = new GroupField();
-        ob_start();
+		ob_start();
 		$group_field->get_value_dynamic_tag( $post_type, $field_id, $this->get_settings( 'mb_skin_template' ) );
-        $valueField = ob_get_contents();
-        ob_end_clean();
-                
-		if ( !empty( $valueField ) ) {
-			$image    = wp_get_attachment_image_src( $valueField, 'full' );
-			if( !empty( $image ) ){
+		$valueField = ob_get_contents();
+		ob_end_clean();
+
+		if ( ! empty( $valueField ) ) {
+			$image = wp_get_attachment_image_src( $valueField, 'full' );
+			if ( ! empty( $image ) ) {
 				return [
 					'ID'       => $valueField,
 					'full_url' => $image[0],
 				];
 			}
 			return $valueField;
-		}        
+		}
 	}
 
 	private function the_value() {
@@ -87,7 +87,7 @@ trait Post {
 		}
 
 		list( $post_type, $field_id ) = explode( ':', $key, 2 );
-        
+
 		$group_field = new GroupField();
 		$value       = $group_field->get_value_dynamic_tag( $post_type, $field_id, $this->get_settings( 'mb_skin_template' ) );
 		if ( $value ) {

@@ -6,7 +6,7 @@ use Elementor\Core\DynamicTags\Manager;
 class Loader {
 
 	public function __construct() {
-		add_action( 'init', array( $this, 'init' ), 20 );
+		add_action( 'init', [ $this, 'init' ], 20 );
 	}
 
 	public function init() {
