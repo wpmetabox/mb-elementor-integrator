@@ -10,25 +10,20 @@ class Loader {
 	}
 
 	public function init() {
-		// Check plugin Meta Box is loaded.
-		if ( ! defined( 'RWMB_VER' ) ) {
+		if ( ! defined( 'RWMB_VER' ) || ! defined( 'ELEMENTOR_PRO_VERSION' ) ) {
 			return;
 		}
 
-		// Check plugin elementor is loaded.
-		if ( defined( 'ELEMENTOR_VERSION' ) ) {
-			add_action( 'elementor/dynamic_tags/register', [ $this, 'register_tags' ] );
-		}
+		add_action( 'elementor/dynamic_tags/register', [ $this, 'register_tags' ] );
 
-		// Check plugin elementor and elementor pro is loaded.
-		if ( defined( 'ELEMENTOR_PRO_VERSION' ) ) {
-			add_action( 'elementor/widgets/register', [ $this, 'register_skins' ] );
-			add_action( 'elementor/theme/register_conditions', [ $this, 'register_conditions' ], 100 );
+		add_action( 'elementor/widgets/register', [ $this, 'register_skins' ] );
+		add_action( 'elementor/theme/register_conditions', [ $this, 'register_conditions' ], 100 );
 
-			$this->register_locations();
-			$this->register_widgets();
-			$this->modules();
-		}
+		$this->register_locations();
+		$this->register_widgets();
+		$this->modules();
+
+		CurrentWidget::track();
 	}
 
 	public function modules() {

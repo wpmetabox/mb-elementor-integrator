@@ -2,6 +2,7 @@
 namespace MBEI\Traits\Fields;
 
 use Elementor\Modules\DynamicTags\Module;
+use MBEI\CurrentWidget;
 
 trait Image {
 	public function get_categories() {
@@ -14,36 +15,50 @@ trait Image {
 	public function get_value( array $options = [] ) {
 		$images = $this->handle_get_value();
 
-		if ( empty( $images ) ) {
-			return;
+		if ( empty( $images ) || ! is_array( $images ) ) {
+			return [];
 		}
 
-		if ( isset( $images['ID'] ) && isset( $images['full_url'] ) ) {
-			return [
-				'id'  => $images['ID'],
-				'url' => $images['full_url'],
-			];
+		$widget = CurrentWidget::name();
+		$types  = [
+			'image'                => 'single',
+			'image-box'            => 'single',
+			'hotspot'              => 'single',
+			'price-list'           => 'single',
+			'media-carousel'       => 'single',
+			'testimonial-carousel' => 'single',
+			'image-carousel'       => 'multiple',
+			'image-gallery'        => 'multiple',
+		];
+		$method = $types[ $widget ] ?? 'default';
+
+		return $this->$method( $images );
+	}
+
+	private function single( array $images ) : array {
+		if ( isset( $images['ID'] ) ) {
+			return $this->format( $images );
 		}
 
-		// Single image.
-		if ( count( $images ) === 1 ) {
-			$images = $images [ array_key_first( $images ) ];
+		$image = reset( $images );
+		return $this->format( $image );
+	}
 
-			return [
-				'id'  => $images['ID'],
-				'url' => isset( $images['url'] ) ?? $images['full_url'],
-			];
+	private function multiple( array $images ) : array {
+		if ( isset( $images['ID'] ) ) {
+			$images = [ $images ];
 		}
+		return array_map( [ $this, 'format' ], $images );
+	}
 
-		// Multiple images.
-		$value = [];
-		foreach ( $images as $image ) {
-			$value[] = [
-				'id'  => $image['ID'],
-				'url' => isset( $image['url'] ) ?? $image['full_url'],
-			];
-		}
+	private function default( array $images ) : array {
+		return isset( $images['ID'] ) ? $this->format( $images ) : array_map( [ $this, 'format' ], $images );
+	}
 
-		return $value;
+	private function format( array $image ) : array {
+		return [
+			'id'  => $image['ID'],
+			'url' => $image['full_url'] ?? '',
+		];
 	}
 }
