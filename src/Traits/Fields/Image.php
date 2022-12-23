@@ -19,8 +19,9 @@ trait Image {
 			return [];
 		}
 
-		$widget = CurrentWidget::name();
+		$widget = CurrentWidget::name() ?? 'null';
 		$types  = [
+			'null'                 => 'single',
 			'image'                => 'single',
 			'image-box'            => 'single',
 			'hotspot'              => 'single',
