@@ -280,9 +280,9 @@ class GroupField {
         }
 
         if ( is_array( $valueField ) ) {
-            $field                                  = rwmb_get_field_settings( $group, [ ], null );
+            $field                                  = 'setting' === $object_type ? rwmb_get_field_settings( $group, ['object_type' => 'setting'], $post_type ) : rwmb_get_field_settings( $group, [ ], null );
             $field['fields']                        = array_combine( (array) array_column( $field['fields'], 'id' ), $field['fields'] );
-            $field['fields'][ $field_id ]['fields'] = array_combine( (array) array_column( $field['fields'][ $field_id ]['fields'], 'id' ), $field['fields'][ $field_id ]['fields'] );
+            $field['fields'][ $field_id ]['fields'] = array_combine( (array) array_column( $field['fields'][ $field_id ]['fields'], 'id' ), (array) $field['fields'][ $field_id ]['fields'] );
             $this->extract_value_dynamic_tag( $valueField, $field['fields'][ $field_id ]['fields'], $template_id );
             return true;
         }
