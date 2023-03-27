@@ -51,7 +51,11 @@ trait Settings {
 			$value = rwmb_meta( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
 
 			if ( $field['mime_type'] === 'image' || $field['type'] === 'image' ) {
-				if ( is_array( $value ) && true === is_int( key( $value ) ) ) {
+				if ( in_array( $field['type'], [ 'image_advanced', 'image_upload', 'single_image', 'image_selects' ] ) ) {
+					return $value;
+				}
+
+				if ( is_array( $value ) && false !== is_int( key( $value ) ) ) {
 					$value = array_shift( $value );
 				}
 				return $group_field->get_image_for_dynamic_tag( $value, $field['type'] );

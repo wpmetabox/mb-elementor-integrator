@@ -48,6 +48,9 @@ trait Image {
 		if ( isset( $images['ID'] ) ) {
 			$images = [ $images ];
 		}
+		if ( array_key_first( $images ) === 0 && ( count( $images ) - 1 ) === array_key_last( $images ) ) {
+			$images = array_merge_recursive( ...$images );
+		}
 		return array_map( [ $this, 'format' ], $images );
 	}
 
