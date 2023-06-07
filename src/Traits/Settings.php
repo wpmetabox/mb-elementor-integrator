@@ -50,6 +50,10 @@ trait Settings {
 			$field = rwmb_get_field_settings( $field_id, [ 'object_type' => 'setting' ], $option_name );
 			$value = rwmb_meta( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
 
+			if ( ! isset( $field['mime_type'] ) ) {
+				return $value;
+			}
+
 			if ( $field['mime_type'] === 'image' || $field['type'] === 'image' ) {
 				if ( in_array( $field['type'], [ 'image_advanced', 'image_upload', 'single_image', 'image_selects' ] ) ) {
 					return $value;
@@ -60,8 +64,6 @@ trait Settings {
 				}
 				return $group_field->get_image_for_dynamic_tag( $value, $field['type'] );
 			}
-
-			return $value;
 		}
 
 		// Get data from group or sub-group
