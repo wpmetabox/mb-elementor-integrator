@@ -50,7 +50,7 @@ trait Settings {
 			$field = rwmb_get_field_settings( $field_id, [ 'object_type' => 'setting' ], $option_name );
 			$value = rwmb_meta( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
 
-			if ( ! isset( $field['mime_type'] ) || $field['type'] !== 'image' ) {
+			if ( ! isset( $field['mime_type'] ) ) {
 				return $value;
 			}
 
