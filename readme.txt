@@ -4,15 +4,15 @@ Donate link: https://metabox.io/pricing/
 Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, custom field, elementor, dynamic tags
 Requires at least: 4.9
 Requires PHP: 7.0
-Tested up to: 6.2
-Stable tag: 2.1.7
+Tested up to: 6.2.2
+Stable tag: 2.1.8
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with Elementor page builder via dynamic tags.
 
 == Description ==
 
-Easily select and show custom fields created by the [Meta Box](https://metabox.io) plugin in the [Elementor](https://elementor.com) page builder via dynamic tags (available in the Pro version).
+Easily select and show custom fields created by [Meta Box](https://metabox.io) in the Elementor page builder via dynamic tags (Pro version).
 
 The plugin works for all field types. And you don't have to remember the field name or field ID to type. You just need to select it from the dropdown list.
 
@@ -20,15 +20,21 @@ The plugin works for all field types. And you don't have to remember the field n
 
 https://www.youtube.com/watch?v=NzR9lii2S30&rel=0
 
-### Bug reports
-
-Please use [GitHub](https://github.com/wpmetabox/mb-elementor-integrator/) for ideas and bug reports.
-
 ### Plugin Links
 
 - [Homepage](https://metabox.io/plugins/mb-elementor-integrator/)
 - [Github repo](https://github.com/wpmetabox/mb-elementor-integrator/)
 - [View other premium extensions](https://metabox.io/plugins/)
+
+### You might also like
+
+If you love this plugin, please try our other great products:
+
+- [Slim SEO](https://wpslimseo.com): A lightweight and full-featured SEO plugin for WordPress
+- [Slim SEO Schema](https://wpslimseo.com/slim-seo-schema/): The best schema plugin for WordPress
+- [Slim SEO Link Manager](https://wpslimseo.com/slim-seo-link-manager/): Build internal links easier in WordPress
+- [Auto Listings](https://wpautolistings.com): The car sale and dealership plugin for WordPress
+- [GretaThemes](https://gretathemes.com): Beautiful and easy to use WordPress themes
 
 == Installation ==
 
@@ -51,6 +57,9 @@ Install **Meta Box - Elementor Integrator** extension
 2. Connect to a Meta Box Field
 
 == Changelog ==
+
+= 2.1.8 - 2023-06-08 =
+- Fix PHP notice for missing check on `mine_type`
 
 = 2.1.7 - 2023-04-03 =
 - Fix container background image
