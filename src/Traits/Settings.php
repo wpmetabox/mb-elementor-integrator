@@ -51,7 +51,7 @@ trait Settings {
 			$value = rwmb_meta( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
 
 			if ( ( isset( $field['mime_type'] ) && $field['mime_type'] === 'image' ) || $field['type'] === 'image' ) {
-				if ( in_array( $field['type'], [ 'image_advanced', 'image_upload', 'single_image', 'image_selects' ] ) ) {
+				if ( in_array( $field['type'], [ 'image_advanced', 'image_upload', 'single_image', 'image_select' ], true ) ) {
 					return $value;
 				}
 
@@ -68,22 +68,22 @@ trait Settings {
 		list( $field_id, $sub_fields ) = false !== strpos( $field_id, ':' ) ? explode( ':', $field_id, 2 ) : explode( '.', $field_id );
 		$sub_fields                    = false !== strpos( $sub_fields, '.' ) ? explode( '.', $sub_fields, 2 ) : (array) $sub_fields;
 
-		$valueField = rwmb_meta( $field_id, [ 'object_type' => 'setting' ], $option_name );
-		if ( 0 < count( $valueField ) ) {
-			if ( true === is_int( key( $valueField ) ) ) {
-				$valueField = array_shift( $valueField );
+		$value_field = rwmb_meta( $field_id, [ 'object_type' => 'setting' ], $option_name );
+		if ( 0 < count( $value_field ) ) {
+			if ( true === is_int( key( $value_field ) ) ) {
+				$value_field = array_shift( $value_field );
 			}
 		}
 
 		$field           = rwmb_get_field_settings( $field_id, [ 'object_type' => 'setting' ], $option_name );
 		$field['fields'] = array_combine( array_column( $field['fields'], 'id' ), $field['fields'] );
 
-		if ( 1 == count( $sub_fields ) ) {
+		if ( 1 === count( $sub_fields ) ) {
 			if ( $field['fields'][ end( $sub_fields ) ]['mime_type'] !== 'image' ) {
-				return $valueField[ end( $sub_fields ) ];
+				return $value_field[ end( $sub_fields ) ];
 			}
 
-			$image_id = $valueField[ end( $sub_fields ) ];
+			$image_id = $value_field[ end( $sub_fields ) ];
 
 		}
 
@@ -107,11 +107,11 @@ trait Settings {
 			return;
 		}
 
-		$valueField = $group_field->get_value_nested_group( $valueField, $sub_fields, true );
-		if ( false !== is_int( key( $valueField ) ) ) {
-			$valueField = array_shift( $valueField );
+		$value_field = $group_field->get_value_nested_group( $value_field, $sub_fields, true );
+		if ( false !== is_int( key( $value_field ) ) ) {
+			$value_field = array_shift( $value_field );
 		}
-		$image_id = $valueField;
+		$image_id = $value_field;
 
 		return $group_field->get_image_for_dynamic_tag( $image_id, $type );
 	}
