@@ -742,6 +742,15 @@ class GroupField {
 			case 'single_image':
 				$file_type = 'image';
 				break;
+			case 'post':
+				$file_type = 'post';
+				break;
+			case 'taxonomy':
+				$file_type = 'taxonomy';
+				break;
+			case 'user':
+				$file_type = 'user';
+				break;
 			default:
 				$file_type = 'text';
 				break;
