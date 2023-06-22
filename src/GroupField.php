@@ -524,20 +524,26 @@ class GroupField {
 			$data_groups = [ $data_groups ];
 		}
 
+		$clone = false;
+		if ( isset( $data_column['id'] ) ) {
+			$data_groups = [ $data_column['id'] => $data_groups ];
+			$clone = true;
+		}
+
 		foreach ( $data_groups as $data_group ) {
 			echo '<div class="mbei-group mbei-group-nested">';
 			foreach ( $data_group as $key => $value ) {
-				if ( ! isset( $data_column[ $key ] ) ) {
+				if ( ! isset( $data_column[ $key ] ) && $clone === false ) {
 					continue;
 				}
 
-				echo '<div class="mbei-subfield mbei-subfield--' . $key . '">';
+				echo '<div class="mbei-subfield mbei-subfield--' . ( $clone === false ? $key : $data_column['id'] ) . '">';
 				if ( is_array( $value ) && ! empty( $value ) ) {
 					$data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
 					$this->render_nested_group( $value, $data_column[ $key ]['fields'] );
 					continue;
 				}
-				$this->display_field( $value, $data_column[ $key ] );
+				$this->display_field( $value, $clone === false ? $data_column[ $key ] : $data_column );
 				echo '</div>';
 			}
 			echo '</div>';
@@ -665,8 +671,8 @@ class GroupField {
 
 				// Get content field group
 				if ( is_array( $data_group[ $col ] ) && ! empty( $data_group[ $col ] ) ) {
-					$data_sub_column = array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] );
-					if ( ! empty( $content_template['data'][ $col ]['template'] ) ) {
+					$data_sub_column = isset( $data_column[ $col ]['fields'] ) ? array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] ) : $data_column[ $col ];
+					if ( ! empty( $content_temp©7late['data'][ $col ]['template'] ) ) {
 						ob_start();
 						$this->display_data_template( $content_template['data'][ $col ]['template'], $data_group[ $col ], $data_sub_column, $options );
 						$value = ob_get_contents();
@@ -714,7 +720,7 @@ class GroupField {
 			echo $options['loop_header'];
 			foreach ( $data_group as $key => $value ) {
 				if ( is_array( $value ) && ! empty( $value ) ) {
-					$data_sub_column = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
+					$data_sub_column = isset( $data_column[ $key ]['fields'] ) ? array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] ) : $data_column[ $key ];
 				}
 
 				ob_start();
