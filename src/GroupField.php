@@ -672,7 +672,7 @@ class GroupField {
 				// Get content field group
 				if ( is_array( $data_group[ $col ] ) && ! empty( $data_group[ $col ] ) ) {
 					$data_sub_column = isset( $data_column[ $col ]['fields'] ) ? array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] ) : $data_column[ $col ];
-					if ( ! empty( $content_temp©7late['data'][ $col ]['template'] ) ) {
+					if ( ! empty( $content_template['data'][ $col ]['template'] ) ) {
 						ob_start();
 						$this->display_data_template( $content_template['data'][ $col ]['template'], $data_group[ $col ], $data_sub_column, $options );
 						$value = ob_get_contents();
