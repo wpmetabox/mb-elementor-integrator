@@ -696,7 +696,8 @@ class GroupField {
 				$value = ob_get_contents();
 				ob_end_clean();
 
-				$content_template['data'][ $col ]['content'] = str_replace( "'", '&#8217;', $content_template['data'][ $col ]['content'] );
+				$content                                     = str_replace( [ '&#8216;', '&#8220;', '&#8221;', '&#8211;' ], [ '&#8217;', '&quot;', '&quot;', '-' ], $content );
+				$content_template['data'][ $col ]['content'] = str_replace( [ '‘', '’', "'", '"', '–' ], [ '&#8216;', '&#8217;', '&#8217;', '&quot;', '-' ], $content_template['data'][ $col ]['content'] );
 				$content                                     = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
 
 			}
