@@ -5,7 +5,7 @@ Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, c
 Requires at least: 4.9
 Requires PHP: 7.0
 Tested up to: 6.2.2
-Stable tag: 2.1.8
+Stable tag: 2.1.9
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with Elementor page builder via dynamic tags.
@@ -57,6 +57,10 @@ Install **Meta Box - Elementor Integrator** extension
 2. Connect to a Meta Box Field
 
 == Changelog ==
+
+= 2.1.9 - 2023-06-27 =
+- Display post title instead of post ID of post field in a group
+- Fix error for groups
 
 = 2.1.8 - 2023-06-08 =
 - Fix PHP notice for missing check on `mine_type`
