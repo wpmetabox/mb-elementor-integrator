@@ -284,7 +284,7 @@ class GroupField {
 			// Case group contain icon
 			if ( $group_settings['type'] === 'group' && array_column( $group_settings['fields'], 'type', 'id' )[ $sub_fields[1] ] === 'icon' ) {
 				$key         = array_search( $sub_fields[1], array_column( $group_settings['fields'], 'id' ) );
-				$value_field = self::display_icon( $value_field, $group_settings['fields'][ $key ] );
+				$value_field = $this->display_icon( $value_field, $group_settings['fields'][ $key ] );
 			}
 		}
 
@@ -780,7 +780,7 @@ class GroupField {
 		}
 	}
 
-	public static function display_icon( $data, $field ) {
+	private function display_icon( $data, $field ) {
 		$icons = array_column( $field['options'], 'label', 'value' );
 
 		if ( ! $icons[ $data ] ) {
