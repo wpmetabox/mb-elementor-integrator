@@ -281,27 +281,10 @@ class GroupField {
 		if ( false !== is_int( key( $value_field ) ) ) {
 			$value_field    = array_shift( $value_field );
 			$group_settings = rwmb_get_field_settings( $sub_fields[0] );
+			// Case group contain icon
 			if ( $group_settings['type'] === 'group' && array_column( $group_settings['fields'], 'type', 'id' )[ $sub_fields[1] ] === 'icon' ) {
-				$key   	= array_search( $sub_fields[1], array_column( $group_settings['fields'], 'id' ) );
-				$icons 	= array_column( $group_settings['fields'][ $key ]['options'], 'label', 'value' );
-				$pos 	= strpos( $icons[ $value_field ], '</svg>' );
-				if ( ! empty( $icons[ $value_field ] ) && $pos !== false ) {
-					$value_field = substr( $icons[ $value_field ], 0, $pos + strlen( '</svg>' ) );
-				} elseif ( is_callable( $group_settings['fields'][ $key ]['icon_css'] ) && ! is_admin() ) {
-					$group_settings['fields'][ $key ]['icon_css']();
-					$value_field = '<span class="' . $value_field . '"></span>';
-				} else {
-					if ( ! is_admin() ) {
-						$handle = md5( $group_settings['fields'][ $key ]['icon_css'] );
-						wp_enqueue_style( $handle, $group_settings['fields'][ $key ]['icon_css'], [], RWMB_VER );
-					} else {
-						add_action( 'elementor/preview/enqueue_styles', function() use ( $group_settings, $key ) {
-							$handle = md5( $group_settings['fields'][ $key ]['icon_css'] );
-							wp_enqueue_style( $handle, $group_settings['fields'][ $key ]['icon_css'], [], RWMB_VER );
-						} );
-					}
-					$value_field = '<span class="' . $value_field . '"></span>';
-				}
+				$key         = array_search( $sub_fields[1], array_column( $group_settings['fields'], 'id' ) );
+				$value_field = self::display_icon( $value_field, $group_settings['fields'][ $key ] );
 			}
 		}
 
@@ -645,11 +628,11 @@ class GroupField {
 							'width="' . $img->getAttribute( 'width' ) . '"',
 							'height' => 'height="' . $img->getAttribute( 'height' ) . '"',
 							'class="' . $img->getAttribute( 'class' ) . '"',
-						], [
+                            ], [
 								$search_data['width'],
 								$search_data['height'],
 								$search_data['class'],
-                        ], $value );
+						], $value );
 					}
 
 					$content = str_replace( $search_data['html'], $value, $content );
@@ -743,12 +726,13 @@ class GroupField {
 
 			echo $options['loop_header'];
 			foreach ( $data_group as $key => $value ) {
+				$data_sub_column = [];
 				if ( is_array( $value ) && ! empty( $value ) ) {
 					$data_sub_column = isset( $data_column[ $key ]['fields'] ) ? array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] ) : $data_column[ $key ];
 				}
 
 				ob_start();
-				isset( $data_sub_column ) ? $this->render_nested_group( $value, $data_sub_column ) : $this->display_field( $value, $data_column[ $key ] );
+				count( $data_sub_column ) > 0 ? $this->render_nested_group( $value, $data_sub_column ) : $this->display_field( $value, $data_column[ $key ] );
 				$content = ob_get_contents();
 				ob_end_clean();
 
@@ -796,4 +780,37 @@ class GroupField {
 		}
 	}
 
+	public static function display_icon( $data, $field ) {
+		$icons = array_column( $field['options'], 'label', 'value' );
+
+		if ( ! $icons[ $data ] ) {
+			return '';
+		}
+
+		// Case using svg
+		$str_svg = strstr( $icons[ $data ], '</svg>', true );
+		if ( $str_svg !== false ) {
+			return $str_svg . '</svg>';
+		}
+
+		// Case using font with icon_css as string
+		if ( $field['icon_css'] && is_string( $field['icon_css'] ) ) {
+			// Frontend
+			if ( ! is_admin() ) {
+				$handle = md5( $field['icon_css'] );
+				wp_enqueue_style( $handle, $field['icon_css'], [], RWMB_VER );
+			}
+			return '<span class="' . $data . '"></span>';
+		}
+
+		// Case using font with icon_css as function
+		if ( $field['icon_css'] && is_callable( $field['icon_css'] ) ) {
+			// Frontend
+			if ( ! is_admin() ) {
+				$field['icon_css']();
+			}
+			return '<span class="' . $data . '"></span>';
+		}
+
+	}
 }
