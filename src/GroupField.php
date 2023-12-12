@@ -280,14 +280,26 @@ class GroupField {
 
 		if ( false !== is_int( key( $value_field ) ) ) {
 			$value_field    = array_shift( $value_field );
-			$group_settings = rwmb_get_field_settings( 'group_icon' );
+			$group_settings = rwmb_get_field_settings( $sub_fields[0] );
 			if ( $group_settings['type'] === 'group' && array_column( $group_settings['fields'], 'type', 'id' )[ $sub_fields[1] ] === 'icon' ) {
-				$key   = array_search( $sub_fields[1], array_column( $group_settings['fields'], 'id' ) );
-				$icons = array_column( \RWMB_Icon_Field::get_icons( $group_settings['fields'][ $key ] ), 'svg', 'value' );
-				if ( ! empty( $icons[ $value_field ] ) ) {
-					$value_field = $icons[ $value_field ];
+				$key   	= array_search( $sub_fields[1], array_column( $group_settings['fields'], 'id' ) );
+				$icons 	= array_column( $group_settings['fields'][ $key ]['options'], 'label', 'value' );
+				$pos 	= strpos( $icons[ $value_field ], '</svg>' );
+				if ( ! empty( $icons[ $value_field ] ) && $pos !== false ) {
+					$value_field = substr( $icons[ $value_field ], 0, $pos + strlen( '</svg>' ) );
+				} elseif ( is_callable( $group_settings['fields'][ $key ]['icon_css'] ) && ! is_admin() ) {
+					$group_settings['fields'][ $key ]['icon_css']();
+					$value_field = '<span class="' . $value_field . '"></span>';
 				} else {
-					\RWMB_Icon_Field::enqueue_icon_font_style( $group_settings['fields'][ $key ] );
+					if ( ! is_admin() ) {
+						$handle = md5( $group_settings['fields'][ $key ]['icon_css'] );
+						wp_enqueue_style( $handle, $group_settings['fields'][ $key ]['icon_css'], [], RWMB_VER );
+					} else {
+						add_action( 'elementor/preview/enqueue_styles', function() use ( $group_settings, $key ) {
+							$handle = md5( $group_settings['fields'][ $key ]['icon_css'] );
+							wp_enqueue_style( $handle, $group_settings['fields'][ $key ]['icon_css'], [], RWMB_VER );
+						} );
+					}
 					$value_field = '<span class="' . $value_field . '"></span>';
 				}
 			}
@@ -538,7 +550,7 @@ class GroupField {
 		$clone = false;
 		if ( isset( $data_column['id'] ) ) {
 			$data_groups = [ $data_column['id'] => $data_groups ];
-			$clone = true;
+			$clone       = true;
 		}
 
 		foreach ( $data_groups as $data_group ) {
