@@ -284,8 +284,8 @@ class GroupField {
 
 		if ( is_array( $value_field ) ) {
 			$field                                  = 'setting' === $object_type ? rwmb_get_field_settings( $group, [ 'object_type' => 'setting' ], $post_type ) : rwmb_get_field_settings( $group, [], null );
-			$field['fields']                        = array_combine( (array) array_column( $field['fields'], 'id' ), $field['fields'] );
-			$field['fields'][ $field_id ]['fields'] = array_combine( (array) array_column( $field['fields'][ $field_id ]['fields'], 'id' ), (array) $field['fields'][ $field_id ]['fields'] );
+			$field['fields']                        = array_combine( (array) array_column( (array) $field['fields'], 'id' ), (array) $field['fields'] );
+			$field['fields'][ $field_id ]['fields'] = array_combine( (array) array_column( (array) $field['fields'][ $field_id ]['fields'], 'id' ), (array) $field['fields'][ $field_id ]['fields'] );
 			$this->extract_value_dynamic_tag( $value_field, $field['fields'][ $field_id ]['fields'], $template_id );
 			return true;
 		}
@@ -527,7 +527,7 @@ class GroupField {
 		$clone = false;
 		if ( isset( $data_column['id'] ) ) {
 			$data_groups = [ $data_column['id'] => $data_groups ];
-			$clone = true;
+			$clone       = true;
 		}
 
 		foreach ( $data_groups as $data_group ) {
