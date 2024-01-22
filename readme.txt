@@ -2,10 +2,10 @@
 Contributors: elightup, metabox, rilwis
 Donate link: https://metabox.io/pricing/
 Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, custom field, elementor, dynamic tags
-Requires at least: 4.9
+Requires at least: 5.9
 Requires PHP: 7.0
-Tested up to: 6.2.2
-Stable tag: 2.1.10
+Tested up to: 6.4.2
+Stable tag: 2.1.11
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with Elementor page builder via dynamic tags.
@@ -57,6 +57,9 @@ Install **Meta Box - Elementor Integrator** extension
 2. Connect to a Meta Box Field
 
 == Changelog ==
+
+= 2.1.11 - 2024-01-22 =
+- Fix Uncaught TypeError: `array_column()`
 
 = 2.1.10 - 2023-07-18 =
 - Fix not working with cloneable group
