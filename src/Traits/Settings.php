@@ -128,6 +128,12 @@ trait Settings {
 			return;
 		}
 
+		$field = rwmb_get_field_settings( $field_id, [ 'object_type' => 'setting' ], $option_name );
+		if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {
+			echo rwmb_get_value( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
+			return;
+		}
+
 		rwmb_the_value( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
 	}
 }
