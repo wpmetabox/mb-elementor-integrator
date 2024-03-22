@@ -96,7 +96,7 @@ trait Post {
 
 		$field = rwmb_get_field_settings( $field_id, [], null );
 		if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {
-			rwmb_the_value( $field_id );
+			echo rwmb_get_value( $field_id );
 			return;
 		}
 
