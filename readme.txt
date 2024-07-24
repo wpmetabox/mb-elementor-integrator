@@ -4,8 +4,8 @@ Donate link: https://metabox.io/pricing/
 Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, custom field, elementor, dynamic tags
 Requires at least: 5.9
 Requires PHP: 7.0
-Tested up to: 6.4.2
-Stable tag: 2.1.11
+Tested up to: 6.6.1
+Stable tag: 2.1.12
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with Elementor page builder via dynamic tags.
@@ -30,11 +30,11 @@ https://www.youtube.com/watch?v=NzR9lii2S30&rel=0
 
 If you like this plugin, you might also like our other WordPress products:
 
-- [Slim SEO](https://wpslimseo.com): A fast, lightweight and full-featured SEO plugin for WordPress with minimal configuration.
-- [Slim SEO Schema](https://wpslimseo.com/products/slim-seo-schema/): The best plugin to add schemas (structured data, rich snippets) to WordPress.
-- [Slim SEO Link Manager](https://wpslimseo.com/products/slim-seo-link-manager/): Build internal link easier in WordPress with real-time reports.
-- [GretaThemes](https://gretathemes.com): Free and premium WordPress themes that clean, simple and just work.
-- [Auto Listings](https://wpautolistings.com): The car sale and dealership plugin for WordPress
+- [Slim SEO](https://wpslimseo.com) - A fast, lightweight and full-featured SEO plugin for WordPress with minimal configuration.
+- [Slim SEO Schema](https://wpslimseo.com/products/slim-seo-schema/) - An advanced, powerful and flexible plugin to add schemas to WordPress.
+- [Slim SEO Link Manager](https://wpslimseo.com/products/slim-seo-link-manager/) - Build internal link easier in WordPress with real-time reports.
+- [GretaThemes](https://gretathemes.com) - Free and premium WordPress themes that clean, simple and just work.
+- [Auto Listings](https://wpautolistings.com) - A car sale and dealership plugin for WordPress.
 
 == Installation ==
 
@@ -57,6 +57,9 @@ Install **Meta Box - Elementor Integrator** extension
 2. Connect to a Meta Box Field
 
 == Changelog ==
+
+= 2.1.12 - 2024-07-24 =
+- Fix image advanced and color fields not working
 
 = 2.1.11 - 2024-01-22 =
 - Fix Uncaught TypeError: `array_column()`
