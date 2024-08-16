@@ -10,7 +10,9 @@
  */
 
 // Prevent loading this file directly.
-defined( 'ABSPATH' ) || die;
+if ( ! defined( 'ABSPATH' ) ) {
+	return;
+}
 
 if ( file_exists( __DIR__ . '/vendor' ) ) {
 	require __DIR__ . '/vendor/autoload.php';
