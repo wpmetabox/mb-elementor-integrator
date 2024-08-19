@@ -279,7 +279,13 @@ class GroupField {
 		$value_field = $this->get_value_nested_group( $value_field, $sub_fields, true );
 
 		if ( false !== is_int( key( $value_field ) ) ) {
-			$value_field = array_shift( $value_field );
+			$value_field    = array_shift( $value_field );
+			$group_settings = rwmb_get_field_settings( $sub_fields[0] );
+			// Case group contain icon
+			if ( $group_settings['type'] === 'group' && array_column( $group_settings['fields'], 'type', 'id' )[ $sub_fields[1] ] === 'icon' ) {
+				$key         = array_search( $sub_fields[1], array_column( $group_settings['fields'], 'id' ) );
+				$value_field = $this->display_icon( $value_field, $group_settings['fields'][ $key ] );
+			}
 		}
 
 		if ( is_array( $value_field ) ) {
@@ -622,11 +628,11 @@ class GroupField {
 							'width="' . $img->getAttribute( 'width' ) . '"',
 							'height' => 'height="' . $img->getAttribute( 'height' ) . '"',
 							'class="' . $img->getAttribute( 'class' ) . '"',
-						], [
+                            ], [
 								$search_data['width'],
 								$search_data['height'],
 								$search_data['class'],
-                        ], $value );
+						], $value );
 					}
 
 					$content = str_replace( $search_data['html'], $value, $content );
@@ -720,12 +726,13 @@ class GroupField {
 
 			echo $options['loop_header'];
 			foreach ( $data_group as $key => $value ) {
+				$data_sub_column = [];
 				if ( is_array( $value ) && ! empty( $value ) ) {
 					$data_sub_column = isset( $data_column[ $key ]['fields'] ) ? array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] ) : $data_column[ $key ];
 				}
 
 				ob_start();
-				isset( $data_sub_column ) ? $this->render_nested_group( $value, $data_sub_column ) : $this->display_field( $value, $data_column[ $key ] );
+				count( $data_sub_column ) > 0 ? $this->render_nested_group( $value, $data_sub_column ) : $this->display_field( $value, $data_column[ $key ] );
 				$content = ob_get_contents();
 				ob_end_clean();
 
@@ -758,6 +765,9 @@ class GroupField {
 			case 'user':
 				$file_type = 'user';
 				break;
+			case 'icon':
+				$file_type = 'icon';
+				break;
 			default:
 				$file_type = 'text';
 				break;
@@ -770,4 +780,37 @@ class GroupField {
 		}
 	}
 
+	private function display_icon( $data, $field ) {
+		$icons = array_column( $field['options'], 'label', 'value' );
+
+		if ( ! $icons[ $data ] ) {
+			return '';
+		}
+
+		// Case using svg
+		$str_svg = strstr( $icons[ $data ], '</svg>', true );
+		if ( $str_svg !== false ) {
+			return $str_svg . '</svg>';
+		}
+
+		// Case using font with icon_css as string
+		if ( $field['icon_css'] && is_string( $field['icon_css'] ) ) {
+			// Frontend
+			if ( ! is_admin() ) {
+				$handle = md5( $field['icon_css'] );
+				wp_enqueue_style( $handle, $field['icon_css'], [], RWMB_VER );
+			}
+			return '<span class="' . $data . '"></span>';
+		}
+
+		// Case using font with icon_css as function
+		if ( $field['icon_css'] && is_callable( $field['icon_css'] ) ) {
+			// Frontend
+			if ( ! is_admin() ) {
+				$field['icon_css']();
+			}
+			return '<span class="' . $data . '"></span>';
+		}
+
+	}
 }
