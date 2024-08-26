@@ -46,5 +46,16 @@ trait Archive {
 		}
 		list( $taxonomy, $field_id ) = explode( ':', $key );
 		rwmb_the_value( $field_id, [ 'object_type' => 'term' ], get_queried_object_id() );
+		if ( ! is_singular() ) {
+			return null;
+		}
+		$post_id = get_the_ID();
+		$terms   = get_the_terms( $post_id, $taxonomy );
+		if ( empty( $terms ) ) {
+			return null;
+		}
+		foreach ( $terms as $term ) {
+			rwmb_the_value( $field_id, [ 'object_type' => 'term' ], $term->term_id );
+		}
 	}
 }
