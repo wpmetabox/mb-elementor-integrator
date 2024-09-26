@@ -4,8 +4,8 @@ Donate link: https://metabox.io/pricing/
 Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, custom field, elementor, dynamic tags
 Requires at least: 5.9
 Requires PHP: 7.0
-Tested up to: 6.6.1
-Stable tag: 2.1.13
+Tested up to: 6.6.2
+Stable tag: 2.2.0
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with Elementor page builder via dynamic tags.
@@ -57,6 +57,10 @@ Install **Meta Box - Elementor Integrator** extension
 2. Connect to a Meta Box Field
 
 == Changelog ==
+
+= 2.2.0 - 2024-09-26 =
+- Add icon field type
+- Support get term meta on the single post
 
 = 2.1.13 - 2024-08-19 =
 Fix running PHP Codesniffer when installing & autoload the plugin's main file via Composer
