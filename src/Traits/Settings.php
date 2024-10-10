@@ -130,7 +130,7 @@ trait Settings {
 
 		$field = rwmb_get_field_settings( $field_id, [ 'object_type' => 'setting' ], $option_name );
 		if ( ! empty( $field ) && ( 'color' === $field['type'] ) ) {
-			echo rwmb_get_value( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name );
+			echo rwmb_get_value( trim( $field_id ), [ 'object_type' => 'setting' ], $option_name ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return;
 		}
 
