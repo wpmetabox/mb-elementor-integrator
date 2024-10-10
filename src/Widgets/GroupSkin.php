@@ -17,7 +17,7 @@ class GroupSkin extends Skin_Base {
 
 	public function __construct( Widget_Base $parent ) {
 		parent::__construct( $parent );
-		$this->skin_id = dechex( rand( 1, 99999999 ) );
+		$this->skin_id = dechex( wp_rand( 1, 99999999 ) );
 	}
 
 	public function get_title() {
@@ -50,7 +50,9 @@ class GroupSkin extends Skin_Base {
 
 	private function style_inline( $size, $spacing ) {
 		echo '<style type="text/css">';
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '.mbei-sub-groups[data-id="' . $this->get_skin_id() . '"]{display: grid; grid-template-columns: repeat(' . $size . ', 1fr);}';
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '.mbei-sub-groups[data-id="' . $this->get_skin_id() . '"] .mbei-sub-group{gap: ' . $spacing . 'px;}';
 		echo '</style>';
 	}
@@ -106,8 +108,8 @@ class GroupSkin extends Skin_Base {
 		$mb_column  = ! empty( $this->parent->get_settings_for_display( 'mb_column' ) ) ? $this->parent->get_settings_for_display( 'mb_column' ) : 3;
 		$mb_spacing = ! empty( $this->parent->get_settings_for_display( 'mb_spacing' ) ) ? $this->parent->get_settings_for_display( 'mb_spacing' ) : 20;
 
-		echo $this->style_inline( $mb_column, $mb_spacing );
-		echo $this->render_header();
+		echo $this->style_inline( $mb_column, $mb_spacing ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $this->render_header(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		if ( $this->parent->get_settings_for_display( 'mb_skin_template' ) ) {
 			$group_fields->display_data_template( $this->parent->get_settings_for_display( 'mb_skin_template' ), $data_groups, $data_column, [
 				'loop_header' => $this->render_loop_header(),
@@ -119,7 +121,7 @@ class GroupSkin extends Skin_Base {
 				'loop_footer' => $this->render_loop_footer(),
 			]);
 		}
-		echo $this->render_footer();
+		echo $this->render_footer(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 }

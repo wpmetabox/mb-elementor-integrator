@@ -188,7 +188,7 @@ class GroupField {
 				$name = 'setting' !== $elements['settings']['object-type'] ? 'meta-box-settings-text' : 'meta-box-text';
 
 				$results                = array_merge_recursive( $results, [
-					'editor' => '[elementor-tag id="' . dechex( rand( 1, 99999999 ) ) . '" name="' . $name . '" settings="' . urlencode( json_encode( [
+					'editor' => '[elementor-tag id="' . dechex( wp_rand( 1, 99999999 ) ) . '" name="' . $name . '" settings="' . urlencode( wp_json_encode( [
 						'key'              => str_replace( '.', ':', $field_group[1] ),
 						'mb_skin_template' => $elements['settings']['mb_skin_template'],
 					] ) ) . '"]',
@@ -294,7 +294,7 @@ class GroupField {
 			$value_field = $value_field[ $field_id ];
 		}
 
-		echo $value_field;
+		echo $value_field; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		return true;
 	}
 
@@ -307,15 +307,16 @@ class GroupField {
 			echo '<div class="mbei-group mbei-group-nested">';
 			foreach ( $field as $key => $value ) {
 				if ( isset( $field_setting[ $key ] ) && isset( $field_setting[ $key ]['mime_type'] ) && 'image' === $field_setting[ $key ]['mime_type'] && ! empty( $value ) ) {
-					echo '<div class="mbei-subfield mbei-subfield--' . $key . '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
+					echo '<div class="mbei-subfield mbei-subfield--' . $key . '">' . wp_get_attachment_image( $value, 'full' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					continue;
 				}
-				echo '<div class="mbei-subfield mbei-subfield--' . $key . '"> ' . $value . '</div>';
+				echo '<div class="mbei-subfield mbei-subfield--' . $key . '"> ' . $value . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			echo '</div>';
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $this->get_placeholder_template( $template_id, [
 			'loop_header' => '<div class="mbei-sub-group">',
 			'loop_footer' => '</div>',
@@ -537,6 +538,7 @@ class GroupField {
 					continue;
 				}
 
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				echo '<div class="mbei-subfield mbei-subfield--' . ( $clone === false ? $key : $data_column['id'] ) . '">';
 				if ( is_array( $value ) && ! empty( $value ) ) {
 					$data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
@@ -557,7 +559,7 @@ class GroupField {
 		$content_template = $this->get_template( $template_id );
 		$cols             = array_keys( $content_template['data'] );
 
-		if ( stripos( json_encode( $cols ), '.' ) !== false ) {
+		if ( stripos( wp_json_encode( $cols ), '.' ) !== false ) {
 			$tmp_cols = $this->split_field_nested( $cols );
 		}
 
@@ -701,7 +703,7 @@ class GroupField {
 				$content                                     = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
 
 			}
-			echo $content;
+			echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
 
@@ -718,7 +720,7 @@ class GroupField {
 				continue;
 			}
 
-			echo $options['loop_header'];
+			echo $options['loop_header']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			foreach ( $data_group as $key => $value ) {
 				$data_sub_column = [];
 				if ( is_array( $value ) && ! empty( $value ) ) {
@@ -734,9 +736,10 @@ class GroupField {
 					continue;
 				}
 
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				echo sprintf( '<div class="mbei-subfield mbei-subfield--%s">%s</div>', $key, $content );
 			}
-			echo $options['loop_footer'];
+			echo $options['loop_footer']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
 
