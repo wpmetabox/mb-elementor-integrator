@@ -21,8 +21,8 @@ You need to install [Meta Box](https://metabox.io) plugin first
 - Click **Install Now** button to install the plugin
 - After installing, click **Activate Plugin** to activate the plugin
 
-Install **Meta Box - Elementor Integrator** extension
+Install **MB Elementor Integration** extension
 
-- Go to **Plugins | Add New** and search for **Meta Box - Elementor Integrator**
+- Go to **Plugins | Add New** and search for **MB Elementor Integration**
 - Click **Install Now** button to install the plugin
 - After installing, click **Activate Plugin** to activate the plugin

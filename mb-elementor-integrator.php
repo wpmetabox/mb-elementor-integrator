@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Meta Box - Elementor Integrator
+ * Plugin Name: MB Elementor Integration
  * Plugin URI:  https://metabox.io/plugins/mb-elementor-integrator/
  * Description: Integrates Meta Box and Elementor Page Builder.
- * Version:     2.2.0
+ * Version:     2.2.1
  * Author:      MetaBox.io
  * Author URI:  https://metabox.io
  * License:     GPL2+
