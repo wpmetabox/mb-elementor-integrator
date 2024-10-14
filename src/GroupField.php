@@ -28,7 +28,7 @@ class GroupField {
 				'post_type'   => 'elementor_library',
 				'numberposts' => -1,
 				'post_status' => 'publish',
-				'tax_query'   => [
+				'tax_query'   => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 					[
 						'taxonomy' => 'elementor_library_type',
 						'field'    => 'slug',

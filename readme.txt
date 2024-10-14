@@ -1,7 +1,7 @@
 === Meta Box - Elementor Integrator ===
 Contributors: elightup, metabox, rilwis
 Donate link: https://metabox.io/pricing/
-Tags: meta box, custom meta box, meta boxes, custom meta boxes, custom fields, custom field, elementor, dynamic tags
+Tags: meta box, custom fields, elementor, dynamic tags
 Requires at least: 5.9
 Requires PHP: 7.0
 Tested up to: 6.6.2
