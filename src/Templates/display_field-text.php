@@ -1,1 +1,1 @@
-<?php echo $data; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+<?php echo esc_html( $data );

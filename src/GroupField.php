@@ -294,7 +294,7 @@ class GroupField {
 			$value_field = $value_field[ $field_id ];
 		}
 
-		echo $value_field; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo esc_html( $value_field );
 		return true;
 	}
 
@@ -307,10 +307,10 @@ class GroupField {
 			echo '<div class="mbei-group mbei-group-nested">';
 			foreach ( $field as $key => $value ) {
 				if ( isset( $field_setting[ $key ] ) && isset( $field_setting[ $key ]['mime_type'] ) && 'image' === $field_setting[ $key ]['mime_type'] && ! empty( $value ) ) {
-					echo '<div class="mbei-subfield mbei-subfield--' . $key . '">' . wp_get_attachment_image( $value, 'full' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					echo '<div class="mbei-subfield mbei-subfield--' . esc_html( $key ). '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
 					continue;
 				}
-				echo '<div class="mbei-subfield mbei-subfield--' . $key . '"> ' . $value . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '<div class="mbei-subfield mbei-subfield--' . esc_html( $key ) . '"> ' . esc_html( $value ). '</div>';
 			}
 			echo '</div>';
 			return;
@@ -703,7 +703,7 @@ class GroupField {
 				$content                                     = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
 
 			}
-			echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses_post( $content );
 		}
 	}
 
@@ -720,7 +720,7 @@ class GroupField {
 				continue;
 			}
 
-			echo $options['loop_header']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses_post( $options['loop_header'] );
 			foreach ( $data_group as $key => $value ) {
 				$data_sub_column = [];
 				if ( is_array( $value ) && ! empty( $value ) ) {
@@ -739,7 +739,7 @@ class GroupField {
 				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				echo sprintf( '<div class="mbei-subfield mbei-subfield--%s">%s</div>', $key, $content );
 			}
-			echo $options['loop_footer']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo wp_kses_post( $options['loop_footer'] );
 		}
 	}
 
