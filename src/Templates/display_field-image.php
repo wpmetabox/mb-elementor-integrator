@@ -1,4 +1,8 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	return;
+}
+
 use MBEI\GroupField;
 
 if ( true === $return ) {
