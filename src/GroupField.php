@@ -307,10 +307,10 @@ class GroupField {
 			echo '<div class="mbei-group mbei-group-nested">';
 			foreach ( $field as $key => $value ) {
 				if ( isset( $field_setting[ $key ] ) && isset( $field_setting[ $key ]['mime_type'] ) && 'image' === $field_setting[ $key ]['mime_type'] && ! empty( $value ) ) {
-					echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ). '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
+					echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ) . '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
 					continue;
 				}
-				echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ) . '"> ' . esc_attr( $value ). '</div>';
+				echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ) . '"> ' . esc_attr( $value ) . '</div>';
 			}
 			echo '</div>';
 			return;
@@ -579,7 +579,7 @@ class GroupField {
 					$tmp_col = explode( '.', $col, 2 );
 					array_shift( $tmp_col );
 
-					$data_sub_column = array_filter( $data_column, function( $k ) use ( $tmp_col ) {
+					$data_sub_column = array_filter( $data_column, function ( $k ) use ( $tmp_col ) {
 						return $k == $tmp_col[0];
 					}, ARRAY_FILTER_USE_KEY);
 
@@ -624,11 +624,11 @@ class GroupField {
 							'width="' . $img->getAttribute( 'width' ) . '"',
 							'height' => 'height="' . $img->getAttribute( 'height' ) . '"',
 							'class="' . $img->getAttribute( 'class' ) . '"',
-							], [
-							$search_data['width'],
-							$search_data['height'],
-							$search_data['class'],
-							], $value );
+						], [
+								$search_data['width'],
+								$search_data['height'],
+								$search_data['class'],
+                        ], $value );
 					}
 
 					$content = str_replace( $search_data['html'], $value, $content );
@@ -703,7 +703,8 @@ class GroupField {
 				$content                                     = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
 
 			}
-			echo wp_kses_post( $content );
+
+			echo wp_kses( $content, array_merge( wp_kses_allowed_html( 'post' ), [ 'style' => [] ] ) );
 		}
 	}
 
@@ -737,7 +738,7 @@ class GroupField {
 				}
 
 				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo sprintf( '<div class="mbei-subfield mbei-subfield--%s">%s</div>', $key, $content );
+				printf( '<div class="mbei-subfield mbei-subfield--%s">%s</div>', $key, $content );
 			}
 			echo wp_kses_post( $options['loop_footer'] );
 		}
@@ -808,7 +809,5 @@ class GroupField {
 			}
 			return '<span class="' . $data . '"></span>';
 		}
-
 	}
-
 }
