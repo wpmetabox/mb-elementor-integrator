@@ -736,9 +736,7 @@ class GroupField {
 				if ( empty( $content ) ) {
 					continue;
 				}
-
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				printf( '<div class="mbei-subfield mbei-subfield--%s">%s</div>', esc_attr( $key ), $content );
+				printf( '<div class="mbei-subfield mbei-subfield--%s">%s</div>', esc_attr( $key ), wp_kses( $content, array_merge( wp_kses_allowed_html( 'post' ), [ 'style' => [] ] ) ) );
 			}
 			echo wp_kses_post( $options['loop_footer'] );
 		}
