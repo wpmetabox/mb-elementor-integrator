@@ -310,7 +310,7 @@ class GroupField {
 					echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ) . '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
 					continue;
 				}
-				echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ) . '"> ' . esc_attr( $value ) . '</div>';
+				echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ) . '"> ' . esc_html( $value ) . '</div>';
 			}
 			echo '</div>';
 			return;
@@ -738,7 +738,7 @@ class GroupField {
 				}
 
 				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				printf( '<div class="mbei-subfield mbei-subfield--%s">%s</div>', $key, $content );
+				printf( '<div class="mbei-subfield mbei-subfield--%s">%s</div>', esc_attr( $key ), $content );
 			}
 			echo wp_kses_post( $options['loop_footer'] );
 		}
