@@ -67,5 +67,4 @@ class Group extends Condition_Base {
 	public function check( $args ) {
 		return false;
 	}
-
 }

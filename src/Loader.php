@@ -46,7 +46,7 @@ class Loader {
 	}
 
 	public function register_widgets() {
-		add_action('elementor/widgets/register', function( $widgets_manager ) {
+		add_action('elementor/widgets/register', function ( $widgets_manager ) {
 			$widgets_manager->register( new Widgets\MBGroup() );
 		});
 	}
@@ -83,9 +83,8 @@ class Loader {
 		}
 
 		// Add a custom skin for the POSTS widget
-		add_action('elementor/widget/metabox-group/skins_init', function( $widget ) {
+		add_action('elementor/widget/metabox-group/skins_init', function ( $widget ) {
 			$widget->add_skin( new Widgets\GroupSkin( $widget ) );
 		});
 	}
-
 }

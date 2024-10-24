@@ -178,7 +178,7 @@ class MBGroup extends Widget_Base {
 					continue;
 				}
 
-				echo '<div class="mbei-subfield mbei-subfield--' . $key . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ). '">';
 				if ( is_array( $value ) && ! empty( $value ) ) {
 					$data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
 					$this->render_nested_group( $value, $data_column[ $key ]['fields'], $group_fields );
@@ -192,11 +192,11 @@ class MBGroup extends Widget_Base {
 	}
 
 	private function render_header() {
-		return '<div class="mbei-groups">';
+		?><div class="mbei-groups"><?php
 	}
 
 	private function render_footer() {
-		return '</div>';
+		?></div><?php
 	}
 
 	protected function render_loop_header() {
@@ -261,7 +261,7 @@ class MBGroup extends Widget_Base {
 		$fields      = $group_fields->get_field_group( 'post' === $settings['object-type'] ? $settings['field-group'] : $settings['field-group-setting'], $settings['object-type'] );
 		$data_column = array_combine( array_column( $fields['fields'], 'id' ), $fields['fields'] );
 
-		echo $this->render_header(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$this->render_header();
 		if ( $this->get_settings_for_display( 'mb_skin_template' ) ) {
 			$group_fields->display_data_template( $this->get_settings_for_display( 'mb_skin_template' ), $data_groups, $data_column, [
 				'loop_header' => $this->render_loop_header(),
@@ -273,11 +273,10 @@ class MBGroup extends Widget_Base {
 				'loop_footer' => $this->render_loop_footer(),
 			]);
 		}
-		echo $this->render_footer(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$this->render_footer();
 	}
 
 	protected function content_template() {
 		parent::content_template();
 	}
-
 }

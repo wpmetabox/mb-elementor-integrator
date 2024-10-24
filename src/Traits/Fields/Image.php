@@ -36,7 +36,7 @@ trait Image {
 		return $this->$method( $images );
 	}
 
-	private function single( array $images ) : array {
+	private function single( array $images ): array {
 		if ( isset( $images['ID'] ) ) {
 			return $this->format( $images );
 		}
@@ -45,7 +45,7 @@ trait Image {
 		return $this->format( $image );
 	}
 
-	private function multiple( array $images ) : array {
+	private function multiple( array $images ): array {
 		if ( isset( $images['ID'] ) ) {
 			$images = [ $images ];
 		}
@@ -55,11 +55,11 @@ trait Image {
 		return array_map( [ $this, 'format' ], $images );
 	}
 
-	private function default( array $images ) : array {
+	private function default( array $images ): array {
 		return isset( $images['ID'] ) ? $this->format( $images ) : array_map( [ $this, 'format' ], $images );
 	}
 
-	private function format( array $image ) : array {
+	private function format( array $image ): array {
 		return [
 			'id'  => $image['ID'],
 			'url' => $image['full_url'] ?? '',

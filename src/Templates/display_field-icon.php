@@ -3,4 +3,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	return;
 }
 
-echo $this->display_icon( $data, $field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+echo wp_kses_post( $this->display_icon( $data, $field ) );

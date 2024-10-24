@@ -7,7 +7,9 @@ use MBEI\Traits\Settings;
 use MBEI\Traits\Fields\Image as ImageField;
 
 class Image extends Data_Tag {
-	use Base, Settings, ImageField;
+	use Base;
+	use Settings;
+	use ImageField;
 
 	public function get_name() {
 		return 'meta-box-settings-image';

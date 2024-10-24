@@ -7,7 +7,9 @@ use MBEI\Traits\Post;
 use MBEI\Traits\Fields\Image as ImageField;
 
 class Image extends Data_Tag {
-	use Base, Post, ImageField;
+	use Base;
+	use Post;
+	use ImageField;
 
 	public function get_name() {
 		return 'meta-box-image';

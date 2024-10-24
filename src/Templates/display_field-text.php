@@ -3,4 +3,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	return;
 }
 
-echo $data; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+echo esc_html( $data );

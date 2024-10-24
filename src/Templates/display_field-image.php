@@ -10,4 +10,3 @@ if ( true === $return ) {
 } else {
 	echo wp_get_attachment_image( $data, 'full' );
 }
-

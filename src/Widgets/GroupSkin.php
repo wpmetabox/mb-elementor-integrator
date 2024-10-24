@@ -33,11 +33,15 @@ class GroupSkin extends Skin_Base {
 	}
 
 	private function render_header() {
-		return '<div class="mbei-sub-groups" data-id="' . $this->get_skin_id() . '">';
+		?>
+		<div class="mbei-sub-groups" data-id="<?php echo esc_attr( $this->get_skin_id() ) ?>">
+		<?php
 	}
 
 	private function render_footer() {
-		return '</div>';
+		?>
+		</div>
+		<?php
 	}
 
 	protected function render_loop_header() {
@@ -108,8 +112,8 @@ class GroupSkin extends Skin_Base {
 		$mb_column  = ! empty( $this->parent->get_settings_for_display( 'mb_column' ) ) ? $this->parent->get_settings_for_display( 'mb_column' ) : 3;
 		$mb_spacing = ! empty( $this->parent->get_settings_for_display( 'mb_spacing' ) ) ? $this->parent->get_settings_for_display( 'mb_spacing' ) : 20;
 
-		echo $this->style_inline( $mb_column, $mb_spacing ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo $this->render_header(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$this->style_inline( (int) $mb_column, (float) $mb_spacing );
+		$this->render_header();
 		if ( $this->parent->get_settings_for_display( 'mb_skin_template' ) ) {
 			$group_fields->display_data_template( $this->parent->get_settings_for_display( 'mb_skin_template' ), $data_groups, $data_column, [
 				'loop_header' => $this->render_loop_header(),
@@ -121,7 +125,6 @@ class GroupSkin extends Skin_Base {
 				'loop_footer' => $this->render_loop_footer(),
 			]);
 		}
-		echo $this->render_footer(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$this->render_footer();
 	}
-
 }
