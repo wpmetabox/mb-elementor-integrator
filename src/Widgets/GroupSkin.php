@@ -33,11 +33,11 @@ class GroupSkin extends Skin_Base {
 	}
 
 	private function render_header() {
-		return '<div class="mbei-sub-groups" data-id="' . $this->get_skin_id() . '">';
+		?><div class="mbei-sub-groups" data-id="<?= esc_attr( $this->get_skin_id() )  ?>"><?php
 	}
 
 	private function render_footer() {
-		return '</div>';
+		?></div><?php
 	}
 
 	protected function render_loop_header() {
@@ -108,8 +108,8 @@ class GroupSkin extends Skin_Base {
 		$mb_column  = ! empty( $this->parent->get_settings_for_display( 'mb_column' ) ) ? $this->parent->get_settings_for_display( 'mb_column' ) : 3;
 		$mb_spacing = ! empty( $this->parent->get_settings_for_display( 'mb_spacing' ) ) ? $this->parent->get_settings_for_display( 'mb_spacing' ) : 20;
 
-		echo wp_kses( $this->style_inline( (int)$mb_column, (float)$mb_spacing ), [ 'style' => [] ] );
-		echo wp_kses_post( $this->render_header() );
+		$this->style_inline( (int)$mb_column, (float)$mb_spacing );
+		$this->render_header();
 		if ( $this->parent->get_settings_for_display( 'mb_skin_template' ) ) {
 			$group_fields->display_data_template( $this->parent->get_settings_for_display( 'mb_skin_template' ), $data_groups, $data_column, [
 				'loop_header' => $this->render_loop_header(),
@@ -121,7 +121,7 @@ class GroupSkin extends Skin_Base {
 				'loop_footer' => $this->render_loop_footer(),
 			]);
 		}
-		echo wp_kses_post( $this->render_footer() );
+		$this->render_footer();
 	}
 
 }

@@ -307,10 +307,10 @@ class GroupField {
 			echo '<div class="mbei-group mbei-group-nested">';
 			foreach ( $field as $key => $value ) {
 				if ( isset( $field_setting[ $key ] ) && isset( $field_setting[ $key ]['mime_type'] ) && 'image' === $field_setting[ $key ]['mime_type'] && ! empty( $value ) ) {
-					echo '<div class="mbei-subfield mbei-subfield--' . esc_html( $key ). '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
+					echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ). '">' . wp_get_attachment_image( $value, 'full' ) . '</div>';
 					continue;
 				}
-				echo '<div class="mbei-subfield mbei-subfield--' . esc_html( $key ) . '"> ' . esc_html( $value ). '</div>';
+				echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ) . '"> ' . esc_attr( $value ). '</div>';
 			}
 			echo '</div>';
 			return;
