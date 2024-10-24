@@ -27,5 +27,4 @@ trait Location {
 			Source_Local::add_template_type( $this->get_id() );
 		}
 	}
-
 }

@@ -127,5 +127,4 @@ class GroupSkin extends Skin_Base {
 		}
 		$this->render_footer();
 	}
-
 }

@@ -7,7 +7,9 @@ use MBEI\Traits\Archive;
 use MBEI\Traits\Fields\Video as VideoField;
 
 class Video extends Data_Tag {
-	use Base, Archive, VideoField;
+	use Base;
+	use Archive;
+	use VideoField;
 
 	public function get_name() {
 		return 'meta-box-archive-url';

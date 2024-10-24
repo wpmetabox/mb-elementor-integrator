@@ -7,7 +7,9 @@ use MBEI\Traits\Post;
 use MBEI\Traits\Fields\Video as VideoField;
 
 class Video extends Data_Tag {
-	use Base, Post, VideoField;
+	use Base;
+	use Post;
+	use VideoField;
 
 	public function get_name() {
 		return 'meta-box-url';

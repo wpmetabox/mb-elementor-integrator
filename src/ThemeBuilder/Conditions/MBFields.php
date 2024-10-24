@@ -47,5 +47,4 @@ class MBFields extends Condition_Base {
 			$this->register_sub_condition( $condition );
 		}
 	}
-
 }

@@ -7,7 +7,9 @@ use MBEI\Traits\Archive;
 use MBEI\Traits\Fields\Image as ImageField;
 
 class Image extends Data_Tag {
-	use Base, Archive, ImageField;
+	use Base;
+	use Archive;
+	use ImageField;
 
 	public function get_name() {
 		return 'meta-box-archive-image';

@@ -51,7 +51,6 @@ trait Skin {
 	}
 
 	public function render_amp() {
-
 	}
 
 	protected function register_divider_controls() {
@@ -59,5 +58,4 @@ trait Skin {
 			'type' => Controls_Manager::DIVIDER,
 		]);
 	}
-
 }

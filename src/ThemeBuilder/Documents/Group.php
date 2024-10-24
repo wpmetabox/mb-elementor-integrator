@@ -74,5 +74,4 @@ class Group extends Single {
 		}
 		return $post_types_options;
 	}
-
 }

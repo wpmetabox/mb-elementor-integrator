@@ -7,7 +7,9 @@ use MBEI\Traits\Settings;
 use MBEI\Traits\Fields\Text as TextField;
 
 class Text extends Tag {
-	use Base, Settings, TextField;
+	use Base;
+	use Settings;
+	use TextField;
 
 	public function get_name() {
 		return 'meta-box-settings-text';

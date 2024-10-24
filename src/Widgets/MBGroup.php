@@ -279,5 +279,4 @@ class MBGroup extends Widget_Base {
 	protected function content_template() {
 		parent::content_template();
 	}
-
 }
