@@ -3,4 +3,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	return;
 }
 
-echo esc_html( $data );
+echo wp_kses_post( $data );
