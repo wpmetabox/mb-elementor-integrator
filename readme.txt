@@ -4,8 +4,8 @@ Donate link: https://metabox.io/pricing/
 Tags: meta box, custom fields, elementor, dynamic tags
 Requires at least: 5.9
 Requires PHP: 7.0
-Tested up to: 6.6.2
-Stable tag: 2.2.2
+Tested up to: 6.7.1
+Stable tag: 2.2.3
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with Elementor page builder via dynamic tags.
@@ -57,6 +57,9 @@ Install **MB Elementor Integration** extension
 2. Connect to a Meta Box Field
 
 == Changelog ==
+
+= 2.2.3 - 2025-02-04 =
+Fix not render HTML tags in subfield WYSIWYG
 
 = 2.2.2 - 2024-11-01
 - Fix direct file access
