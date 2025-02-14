@@ -2,6 +2,9 @@
 
 Easily select and show custom fields created by the [Meta Box](https://metabox.io) plugin in the [Elementor](https://elementor.com) page builder via dynamic tags (available in the Pro version).
 
+> **Meta Box Lite**<br>
+> We recommend using [Meta Box Lite](https://metabox.io/lite/), a feature-rich free UI version of Meta Box that provides UI and all free features for managing custom fields and dynamic content on WordPress, including post types, taxonomies, custom fields, and relationships.
+
 The plugin works for all field types. And you don't have to remember the field name or field ID to type. You just need to select it from the dropdown list.
 
 **Video demo**:

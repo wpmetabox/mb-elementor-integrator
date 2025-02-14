@@ -4,7 +4,7 @@ Donate link: https://metabox.io/pricing/
 Tags: meta box, custom fields, elementor, dynamic tags
 Requires at least: 5.9
 Requires PHP: 7.0
-Tested up to: 6.7.1
+Tested up to: 6.7.2
 Stable tag: 2.2.3
 License: GPLv2 or later
 
@@ -13,6 +13,9 @@ Integrates Meta Box's custom fields with Elementor page builder via dynamic tags
 == Description ==
 
 Easily select and show custom fields created by [Meta Box](https://metabox.io) in the Elementor page builder via dynamic tags (Pro version).
+
+> **Meta Box Lite**
+> We recommend using [Meta Box Lite](https://metabox.io/lite/), a feature-rich free UI version of Meta Box that provides UI and all free features for managing custom fields and dynamic content on WordPress, including post types, taxonomies, custom fields, and relationships.
 
 The plugin works for all field types. And you don't have to remember the field name or field ID to type. You just need to select it from the dropdown list.
 
@@ -61,7 +64,7 @@ Install **MB Elementor Integration** extension
 = 2.2.3 - 2025-02-04 =
 Fix not render HTML tags in subfield WYSIWYG
 
-= 2.2.2 - 2024-11-01
+= 2.2.2 - 2024-11-01 =
 - Fix direct file access
 - Escape values when outputting
 
