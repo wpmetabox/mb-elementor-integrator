@@ -3,7 +3,7 @@
  * Plugin Name: MB Elementor Integration
  * Plugin URI:  https://metabox.io/plugins/mb-elementor-integrator/
  * Description: Integrates Meta Box and Elementor Page Builder.
- * Version:     2.2.3
+ * Version:     2.2.4
  * Author:      MetaBox.io
  * Author URI:  https://metabox.io
  * License:     GPL2+
