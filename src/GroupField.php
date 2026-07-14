@@ -109,7 +109,7 @@ class GroupField {
 		];
 	}
 
-	private function dynamic_tag_to_data( $dynamic_tags = [], Manager $dynamic_tags_mageger = null ) {
+	private function dynamic_tag_to_data( $dynamic_tags = [], ?Manager $dynamic_tags_mageger = null ): array {
 		if ( empty( $dynamic_tags ) || empty( $dynamic_tags_mageger ) ) {
 			return [];
 		}
