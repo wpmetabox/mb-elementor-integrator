@@ -16,8 +16,8 @@
   "authors": [
     {
       "name": "Tran Ngoc Tuan Anh",
-      "email": "anhtnt@elightup.com",
-      "homepage": "https://metabox.io",
+      "email": "rilwis@gmail.com",
+      "homepage": "https://deluxeblogtips.com",
       "role": "Developer"
     }
   ],
@@ -25,6 +25,7 @@
   	"psr-4": {"MBEI\\" : "src/"}
   },
   "scripts": {
-    "format": "phpcbf src/ && phpcbf src/ --standard=Generic --sniffs=Generic.Arrays.DisallowLongArraySyntax"
+  "phpcs": "phpcs --standard=../meta-box-aio/phpcs.xml",
+    "phpcbf": "phpcbf --standard=../meta-box-aio/phpcs.xml"
   }
 }
