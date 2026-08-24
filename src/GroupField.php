@@ -654,7 +654,12 @@ class GroupField {
 						];
 					}
 
-					if ( empty( $search_data ) ) {
+					$clone_has_image = isset( $data_group[ $col ] ) && ! empty( $data_group[ $col ] );
+					if ( empty( $search_data ) || ! $clone_has_image ) {
+						if ( ! empty( $search_data ) && ! $clone_has_image ) {
+							// Clone has no image → remove placeholder first
+							$content = str_replace( $search_data['html'], '', $content );
+						}
 						continue;
 					}
 
