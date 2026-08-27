@@ -250,10 +250,14 @@ class GroupField {
 	}
 
 	public function get_value_dynamic_tag( $post_type, $field_id, $template_id = null, $object_type = 'post' ) {
+		$group_from_field_id = false;
+
 		if ( false !== strpos( $field_id, ':' ) ) {
 			list( $group, $field_id ) = explode( ':', $field_id, 2 );
+			$group_from_field_id = true;
 		} elseif ( false !== strpos( $field_id, '.' ) ) {
 			list( $group, $field_id ) = explode( '.', $field_id, 2 );
+			$group_from_field_id = true;
 		}
 
 		if ( ! isset( $group ) && empty( get_post_type_object( $post_type ) ) && 'setting' !== $object_type ) {
@@ -268,9 +272,10 @@ class GroupField {
 			$value_field = rwmb_meta( $group, [ 'object_type' => 'setting' ], $post_type );
 		} else {
 			$value_field = empty( get_post_type_object( $post_type ) ) ? rwmb_get_value( $post_type ) : rwmb_get_value( $group );
-			$field_id    = empty( get_post_type_object( $post_type ) ) ? $group . '.' . $field_id : $field_id;
+			if ( $group_from_field_id ) {
+				$field_id = $group . '.' . $field_id;
+			}
 		}
-
 		if ( empty( $value_field ) || ( is_array( $value_field ) && 0 == count( $value_field ) ) ) {
 			return true;
 		}
@@ -283,8 +288,8 @@ class GroupField {
 		}
 
 		if ( is_array( $value_field ) ) {
-			$field                                  = 'setting' === $object_type ? rwmb_get_field_settings( $group, [ 'object_type' => 'setting' ], $post_type ) : rwmb_get_field_settings( $group, [], null );
-			$field['fields']                        = array_combine( (array) array_column( (array) $field['fields'], 'id' ), (array) $field['fields'] );
+			$field           = 'setting' === $object_type ? rwmb_get_field_settings( $group, [ 'object_type' => 'setting' ], $post_type ) : rwmb_get_field_settings( $group, [], null );
+			$field['fields'] = array_combine( (array) array_column( (array) $field['fields'], 'id' ), (array) $field['fields'] );
 			$field['fields'][ $field_id ]['fields'] = array_combine( (array) array_column( (array) $field['fields'][ $field_id ]['fields'], 'id' ), (array) $field['fields'][ $field_id ]['fields'] );
 			$this->extract_value_dynamic_tag( $value_field, $field['fields'][ $field_id ]['fields'], $template_id );
 			return true;
@@ -464,7 +469,14 @@ class GroupField {
 		}
 
 		if ( true === $first_item ) {
-			$values = [ array_shift( $values ) ];
+			$picked = null;
+			foreach ( $values as $item ) {
+				if ( $this->nested_value_exists( $item, $keys ) ) {
+					$picked = $item;
+					break;
+				}
+			}
+			$values = [ $picked ?? reset( $values ) ];
 		}
 
 		$return     = [];
@@ -491,6 +503,16 @@ class GroupField {
 		}
 
 		return $return;
+	}
+
+	private function nested_value_exists( $value, array $keys ) {
+		foreach ( $keys as $i => $key ) {
+		if ( ! isset( $value[ $key ] ) || empty( $value[ $key ] ) ) {
+		return false;
+		}
+		$value = $value[ $key ];
+		}
+		return true;
 	}
 
 	public function split_field_nested( $fields = [] ) {
@@ -552,165 +574,197 @@ class GroupField {
 		}
 	}
 
-	public function display_data_template( $template_id, $data_groups, $data_column, $options = [
-		'loop_header' => '',
-		'loop_footer' => '',
-	] ) {
+	public function display_data_template( $template_id, $data_groups, $data_column, $options = [ 'loop_header' => '', 'loop_footer' => '' ] ) {
 		$content_template = $this->get_template( $template_id );
 		$cols             = array_keys( $content_template['data'] );
+		$has_nested_cols  = false !== stripos( wp_json_encode( $cols ), '.' );
 
-		if ( stripos( wp_json_encode( $cols ), '.' ) !== false ) {
-			$tmp_cols = $this->split_field_nested( $cols );
-		}
-
-		foreach ( $data_groups as $k => $data_group ) {
-			$check_cols = array_intersect( array_keys( $data_group ), $cols );
-			if ( 0 === count( $check_cols ) && ! isset( $tmp_cols ) ) {
-				continue;
+		foreach ( $data_groups as $data_group ) {
+			if ( ! $this->group_has_matching_cols( $data_group, $cols, $has_nested_cols ) ) {
+			continue;
 			}
 
 			$content = $options['loop_header'] . $content_template['content'] . $options['loop_footer'];
+
 			foreach ( $cols as $col ) {
-				if ( ! isset( $data_group[ $col ] ) && false === strpos( $col, '.' ) ) {
-					continue;
-				}
-
-				if ( false !== strpos( $col, '.' ) ) {
-					$tmp_col = explode( '.', $col, 2 );
-					array_shift( $tmp_col );
-
-					$data_sub_column = array_filter( $data_column, function ( $k ) use ( $tmp_col ) {
-						return $k == $tmp_col[0];
-					}, ARRAY_FILTER_USE_KEY);
-
-					ob_start();
-					$this->render_nested_group( $data_group, $data_sub_column );
-					$value = ob_get_contents();
-					ob_end_clean();
-
-					// Display text from sub field group.
-					if ( ! isset( $data_sub_column[ $tmp_col[0] ]['mime_type'] ) || 'image' !== $data_sub_column[ $tmp_col[0] ]['mime_type'] ) {
-						$content_template['data'][ $col ]['content'] = str_replace( "'", '&#8217;', $content_template['data'][ $col ]['content'] );
-						$content                                     = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
-						continue;
-					}
-
-					// Display image from sub field group.
-					$search_data = [];
-					libxml_use_internal_errors( true );
-					$dom = new \DOMDocument();
-					$dom->loadHTML( $content );
-					foreach ( $dom->getElementsByTagName( 'img' ) as $i => $img ) {
-						if ( false === strpos( $img->getAttribute( 'srcset' ), $content_template['data'][ $col ]['content'] ) ) {
-							continue;
-						}
-						$search_data = [
-							'html'   => str_replace( '>', ' />', $dom->saveHTML( $img ) ),
-							'width'  => 'width="' . $img->getAttribute( 'width' ) . '"',
-							'height' => 'height="' . $img->getAttribute( 'height' ) . '"',
-							'class'  => 'class="' . $img->getAttribute( 'class' ) . '"',
-						];
-					}
-
-					if ( empty( $search_data ) ) {
-						continue;
-					}
-
-					// Replace Attribute Image
-					$domNew = new \DOMDocument();
-					$domNew->loadHTML( $value );
-					foreach ( $domNew->getElementsByTagName( 'img' ) as $i => $img ) {
-						$value = str_replace( [
-							'width="' . $img->getAttribute( 'width' ) . '"',
-							'height' => 'height="' . $img->getAttribute( 'height' ) . '"',
-							'class="' . $img->getAttribute( 'class' ) . '"',
-						], [
-								$search_data['width'],
-								$search_data['height'],
-								$search_data['class'],
-                        ], $value );
-					}
-
-					$content = str_replace( $search_data['html'], $value, $content );
-					continue;
-				}
-
-				// Display field image for group
-				if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {
-					$search_data = [];
-					libxml_use_internal_errors( true );
-					$dom = new \DOMDocument();
-					$dom->loadHTML( $content );
-					foreach ( $dom->getElementsByTagName( 'img' ) as $i => $img ) {
-						$tmp_image = substr( $content_template['data'][ $col ]['content'], 0, strlen( $content_template['data'][ $col ]['content'] ) - 4 );
-						if ( false === strpos( $img->getAttribute( 'srcset' ), $tmp_image ) && false === strpos( $img->getAttribute( 'src' ), $tmp_image ) ) {
-							continue;
-						}
-						$search_data = [
-							'html'   => str_replace( '>', ' />', $dom->saveHTML( $img ) ),
-							'width'  => $img->getAttribute( 'width' ),
-							'height' => $img->getAttribute( 'height' ),
-							'class'  => $img->getAttribute( 'class' ),
-						];
-					}
-
-					$clone_has_image = isset( $data_group[ $col ] ) && ! empty( $data_group[ $col ] );
-					if ( empty( $search_data ) || ! $clone_has_image ) {
-						if ( ! empty( $search_data ) && ! $clone_has_image ) {
-							// Clone has no image → remove placeholder first
-							$content = str_replace( $search_data['html'], '', $content );
-						}
-						continue;
-					}
-
-					$values        = is_array( $data_group[ $col ] ) ? $data_group[ $col ] : (array) $data_group[ $col ];
-					$content_image = '';
-					foreach ( $values as $val ) {
-						$image = $this->get_image_for_dynamic_tag( $val, $data_column[ $col ]['type'] );
-						if ( ! isset( $image['ID'] ) ) {
-							continue;
-						}
-						$content_image .= wp_get_attachment_image( $image['ID'], [ $search_data['width'], $search_data['height'] ], false, [ 'class' => $search_data['class'] ] );
-					}
-					$content = str_replace( $search_data['html'], $content_image, $content );
-					continue;
-				}
-
-				// Get content field group
-				if ( is_array( $data_group[ $col ] ) && ! empty( $data_group[ $col ] ) ) {
-					$data_sub_column = isset( $data_column[ $col ]['fields'] ) ? array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] ) : $data_column[ $col ];
-					if ( ! empty( $content_template['data'][ $col ]['template'] ) ) {
-						ob_start();
-						$this->display_data_template( $content_template['data'][ $col ]['template'], $data_group[ $col ], $data_sub_column, $options );
-						$value = ob_get_contents();
-						ob_end_clean();
-
-						$content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
-						continue;
-					}
-
-					ob_start();
-					$this->render_nested_group( $data_group[ $col ], $data_sub_column );
-					$value = ob_get_contents();
-					ob_end_clean();
-
-					$content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
-					continue;
-				}
-
-				ob_start();
-				$this->display_field( $data_group[ $col ], $data_column[ $col ], true );
-				$value = ob_get_contents();
-				ob_end_clean();
-
-				$content                                     = str_replace( [ '&#8216;', '&#8220;', '&#8221;', '&#8211;' ], [ '&#8217;', '&quot;', '&quot;', '-' ], $content );
-				$content_template['data'][ $col ]['content'] = str_replace( [ "'", '"', '–' ], [ '&#8217;', '&quot;', '-' ], $content_template['data'][ $col ]['content'] );
-				$content                                     = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
-
+				$this->apply_column( $col, $content, $content_template, $data_group, $data_column, $options );
 			}
 
 			echo wp_kses( $content, array_merge( wp_kses_allowed_html( 'post' ), [ 'style' => [] ] ) );
 		}
+	}
+
+	private function group_has_matching_cols( $data_group, $cols, $has_nested_cols ) {
+		if ( $has_nested_cols ) {
+			return true;
+		}
+
+		return 0 < count( array_intersect( array_keys( $data_group ), $cols ) );
+	}
+
+	private function apply_column( $col, &$content, &$content_template, $data_group, $data_column, $options ) {
+		if ( false !== strpos( $col, '.' ) ) {
+			return $this->apply_nested_subfield( $col, $content, $content_template, $data_group, $data_column );
+		}
+
+		// Field has no value for this clone.
+		if ( ! isset( $data_group[ $col ] ) ) {
+			return $this->remove_orphan_image_placeholder( $col, $content, $content_template, $data_column );
+		}
+
+		if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {
+			return $this->apply_image_field( $col, $content, $content_template, $data_group, $data_column );
+		}
+
+		if ( is_array( $data_group[ $col ] ) && ! empty( $data_group[ $col ] ) ) {
+			return $this->apply_group_field( $col, $content, $content_template, $data_group, $data_column, $options );
+		}
+
+		$this->apply_text_field( $col, $content, $content_template, $data_group, $data_column );
+	}
+
+	private function find_placeholder_image( $content, $needle, $check_src = true ) {
+		if ( empty( $needle ) ) {
+			return null;
+		}
+
+		libxml_use_internal_errors( true );
+		$dom = new \DOMDocument();
+		$dom->loadHTML( $content );
+
+		foreach ( $dom->getElementsByTagName( 'img' ) as $img ) {
+			$in_srcset = false !== strpos( $img->getAttribute( 'srcset' ), $needle );
+			$in_src    = $check_src && false !== strpos( $img->getAttribute( 'src' ), $needle );
+
+			if ( ! $in_srcset && ! $in_src ) {
+				continue;
+			}
+
+			return [
+				'html'   => str_replace( '>', ' />', $dom->saveHTML( $img ) ),
+				'width'  => $img->getAttribute( 'width' ),
+				'height' => $img->getAttribute( 'height' ),
+				'class'  => $img->getAttribute( 'class' ),
+			];
+		}
+
+		return null;
+	}
+
+	private function remove_orphan_image_placeholder( $col, &$content, $content_template, $data_column ) {
+		if ( ! isset( $data_column[ $col ]['mime_type'] ) || 'image' !== $data_column[ $col ]['mime_type'] ) {
+			return;
+		}
+
+		$placeholder_content = $content_template['data'][ $col ]['content'];
+		$needle              = substr( $placeholder_content, 0, strlen( $placeholder_content ) - 4 );
+		$placeholder         = $this->find_placeholder_image( $content, $needle );
+
+		if ( $placeholder ) {
+			$content = str_replace( $placeholder['html'], '', $content );
+		}
+	}
+
+	private function apply_image_field( $col, &$content, $content_template, $data_group, $data_column ) {
+		$placeholder_content = $content_template['data'][ $col ]['content'];
+		$needle              = substr( $placeholder_content, 0, strlen( $placeholder_content ) - 4 );
+		$placeholder         = $this->find_placeholder_image( $content, $needle );
+
+		$clone_has_image = ! empty( $data_group[ $col ] );
+
+		if ( ! $placeholder || ! $clone_has_image ) {
+			if ( $placeholder && ! $clone_has_image ) {
+				$content = str_replace( $placeholder['html'], '', $content );
+			}
+			return;
+		}
+
+		$values        = is_array( $data_group[ $col ] ) ? $data_group[ $col ] : (array) $data_group[ $col ];
+		$content_image = '';
+		foreach ( $values as $val ) {
+			$image = $this->get_image_for_dynamic_tag( $val, $data_column[ $col ]['type'] );
+			if ( ! isset( $image['ID'] ) ) {
+				continue;
+			}
+			$content_image .= wp_get_attachment_image( $image['ID'], [ $placeholder['width'], $placeholder['height'] ], false, [ 'class' => $placeholder['class'] ] );
+		}
+
+		$content = str_replace( $placeholder['html'], $content_image, $content );
+	}
+
+	private function apply_nested_subfield( $col, &$content, $content_template, $data_group, $data_column ) {
+		$tmp_col = explode( '.', $col, 2 );
+		array_shift( $tmp_col );
+
+		$data_sub_column = array_filter( $data_column, function ( $k ) use ( $tmp_col ) {
+			return $k == $tmp_col[0];
+		}, ARRAY_FILTER_USE_KEY );
+
+		ob_start();
+		$this->render_nested_group( $data_group, $data_sub_column );
+		$value = ob_get_contents();
+		ob_end_clean();
+
+		$is_image = isset( $data_sub_column[ $tmp_col[0] ]['mime_type'] ) && 'image' === $data_sub_column[ $tmp_col[0] ]['mime_type'];
+
+		if ( ! $is_image ) {
+			$placeholder_content = str_replace( "'", '&#8217;', $content_template['data'][ $col ]['content'] );
+			$content             = str_replace( $placeholder_content, $value, $content );
+			return;
+		}
+
+		$placeholder = $this->find_placeholder_image( $content, $content_template['data'][ $col ]['content'], false );
+		if ( ! $placeholder ) {
+			return;
+		}
+
+		$domNew = new \DOMDocument();
+		$domNew->loadHTML( $value );
+		foreach ( $domNew->getElementsByTagName( 'img' ) as $img ) {
+		    $value = str_replace(
+				[
+					'width="' . $img->getAttribute( 'width' ) . '"',
+					'height' => 'height="' . $img->getAttribute( 'height' ) . '"',
+					'class="' . $img->getAttribute( 'class' ) . '"',
+				],
+				[
+					'width="' . $placeholder['width'] . '"',
+					'height="' . $placeholder['height'] . '"',
+					'class="' . $placeholder['class'] . '"',
+				],
+				$value
+			);
+		}
+
+		$content = str_replace( $placeholder['html'], $value, $content );
+	}
+
+	private function apply_group_field( $col, &$content, $content_template, $data_group, $data_column, $options ) {
+		$data_sub_column = isset( $data_column[ $col ]['fields'] )
+			? array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] )
+			: $data_column[ $col ];
+
+		ob_start();
+		if ( ! empty( $content_template['data'][ $col ]['template'] ) ) {
+			$this->display_data_template( $content_template['data'][ $col ]['template'], $data_group[ $col ], $data_sub_column, $options );
+		} else {
+			$this->render_nested_group( $data_group[ $col ], $data_sub_column );
+		}
+		$value = ob_get_contents();
+		ob_end_clean();
+
+		$content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
+	}
+
+	private function apply_text_field( $col, &$content, &$content_template, $data_group, $data_column ) {
+		ob_start();
+		$this->display_field( $data_group[ $col ], $data_column[ $col ], true );
+		$value = ob_get_contents();
+		ob_end_clean();
+
+		$content = str_replace( [ '&#8216;', '&#8220;', '&#8221;', '&#8211;' ], [ '&#8217;', '&quot;', '&quot;', '-' ], $content );
+		$content_template['data'][ $col ]['content'] = str_replace( [ "'", '"', '–' ], [ '&#8217;', '&quot;', '-' ], $content_template['data'][ $col ]['content'] );
+		$content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
 	}
 
 	public function display_data_widget( $data_groups, $data_column, $options = [
