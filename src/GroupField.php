@@ -254,10 +254,10 @@ class GroupField {
 
 		if ( false !== strpos( $field_id, ':' ) ) {
 			list( $group, $field_id ) = explode( ':', $field_id, 2 );
-			$group_from_field_id = true;
+			$group_from_field_id      = true;
 		} elseif ( false !== strpos( $field_id, '.' ) ) {
 			list( $group, $field_id ) = explode( '.', $field_id, 2 );
-			$group_from_field_id = true;
+			$group_from_field_id      = true;
 		}
 
 		if ( ! isset( $group ) && empty( get_post_type_object( $post_type ) ) && 'setting' !== $object_type ) {
@@ -288,8 +288,8 @@ class GroupField {
 		}
 
 		if ( is_array( $value_field ) ) {
-			$field           = 'setting' === $object_type ? rwmb_get_field_settings( $group, [ 'object_type' => 'setting' ], $post_type ) : rwmb_get_field_settings( $group, [], null );
-			$field['fields'] = array_combine( (array) array_column( (array) $field['fields'], 'id' ), (array) $field['fields'] );
+			$field                                  = 'setting' === $object_type ? rwmb_get_field_settings( $group, [ 'object_type' => 'setting' ], $post_type ) : rwmb_get_field_settings( $group, [], null );
+			$field['fields']                        = array_combine( (array) array_column( (array) $field['fields'], 'id' ), (array) $field['fields'] );
 			$field['fields'][ $field_id ]['fields'] = array_combine( (array) array_column( (array) $field['fields'][ $field_id ]['fields'], 'id' ), (array) $field['fields'][ $field_id ]['fields'] );
 			$this->extract_value_dynamic_tag( $value_field, $field['fields'][ $field_id ]['fields'], $template_id );
 			return true;
@@ -505,12 +505,12 @@ class GroupField {
 		return $return;
 	}
 
-	private function nested_value_exists( $value, array $keys ) {
-		foreach ( $keys as $i => $key ) {
-		if ( ! isset( $value[ $key ] ) || empty( $value[ $key ] ) ) {
-		return false;
-		}
-		$value = $value[ $key ];
+	private function nested_value_exists( $value, array $keys ): bool {
+		foreach ( $keys as $key ) {
+			if ( empty( $value[ $key ] ) ) {
+				return false;
+			}
+			$value = $value[ $key ];
 		}
 		return true;
 	}
@@ -574,14 +574,17 @@ class GroupField {
 		}
 	}
 
-	public function display_data_template( $template_id, $data_groups, $data_column, $options = [ 'loop_header' => '', 'loop_footer' => '' ] ) {
+	public function display_data_template( $template_id, $data_groups, $data_column, $options = [
+		'loop_header' => '',
+		'loop_footer' => '',
+	] ) {
 		$content_template = $this->get_template( $template_id );
 		$cols             = array_keys( $content_template['data'] );
 		$has_nested_cols  = false !== stripos( wp_json_encode( $cols ), '.' );
 
 		foreach ( $data_groups as $data_group ) {
 			if ( ! $this->group_has_matching_cols( $data_group, $cols, $has_nested_cols ) ) {
-			continue;
+				continue;
 			}
 
 			$content = $options['loop_header'] . $content_template['content'] . $options['loop_footer'];
@@ -721,7 +724,7 @@ class GroupField {
 		$domNew = new \DOMDocument();
 		$domNew->loadHTML( $value );
 		foreach ( $domNew->getElementsByTagName( 'img' ) as $img ) {
-		    $value = str_replace(
+			$value = str_replace(
 				[
 					'width="' . $img->getAttribute( 'width' ) . '"',
 					'height' => 'height="' . $img->getAttribute( 'height' ) . '"',
@@ -762,9 +765,9 @@ class GroupField {
 		$value = ob_get_contents();
 		ob_end_clean();
 
-		$content = str_replace( [ '&#8216;', '&#8220;', '&#8221;', '&#8211;' ], [ '&#8217;', '&quot;', '&quot;', '-' ], $content );
+		$content                                     = str_replace( [ '&#8216;', '&#8220;', '&#8221;', '&#8211;' ], [ '&#8217;', '&quot;', '&quot;', '-' ], $content );
 		$content_template['data'][ $col ]['content'] = str_replace( [ "'", '"', '–' ], [ '&#8217;', '&quot;', '-' ], $content_template['data'][ $col ]['content'] );
-		$content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
+		$content                                     = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
 	}
 
 	public function display_data_widget( $data_groups, $data_column, $options = [
