@@ -84,20 +84,22 @@ class GroupField {
 
 		if ( 0 < count( $sub_group ) ) {
 			libxml_use_internal_errors( true );
-			$domTemplate = new \DOMDocument();
-			$domTemplate->loadHTML( $content_template );
+			$dom_template = new \DOMDocument();
+			$dom_template->loadHTML( $content_template );
 			libxml_clear_errors();
-			$xpath = new \DOMXpath( $domTemplate );
+			$xpath = new \DOMXpath( $dom_template );
 			foreach ( $sub_group as $sub ) {
 				$widget_sub = $xpath->query( '//div[@data-id="' . $sub['id'] . '"]//div[contains(@class,"mbei-sub-groups")]' );
 				if ( $widget_sub->length > 0 ) {
 					$widget_node = $widget_sub->item( 0 );
 
-					$replacement = $domTemplate->createDocumentFragment();
+					$replacement = $dom_template->createDocumentFragment();
 					$replacement->appendXML( '<div class="' . $widget_node->getAttribute( 'class' ) . '" data-id="' . $widget_node->getAttribute( 'data-id' ) . '">' . $this->get_placeholder_template( $sub['template'] ) . '</div>' );
 
+					// phpcs:ignore WordPress.NamingConventions.ValidVariableName.NotSnakeCase
 					$widget_node->parentNode->replaceChild( $replacement, $widget_node );
-					$content_template = $domTemplate->saveHTML( $domTemplate->documentElement );
+					$content_template = $dom_template->saveHTML( $dom_template->documentElement );
+					// phpcs:enable
 					$content_template = str_replace( [ '<html>', '</html>', '<head>', '</head>', '<body>', '</body>' ], '', $content_template );
 				}
 			}
@@ -283,7 +285,7 @@ class GroupField {
 		$sub_fields  = false !== strpos( $field_id, '.' ) ? explode( '.', $field_id ) : (array) $field_id;
 		$value_field = $this->get_value_nested_group( $value_field, $sub_fields, true );
 
-		if ( false !== is_int( key( $value_field ) ) ) {
+		if ( is_int( key( $value_field ) ) ) {
 			$value_field = array_shift( $value_field );
 		}
 
@@ -476,7 +478,12 @@ class GroupField {
 					break;
 				}
 			}
-			$values = [ $picked ?? reset( $values ) ];
+
+			if ( null === $picked ) {
+				return [];
+			}
+
+			$values = [ $picked ];
 		}
 
 		$return     = [];
@@ -507,32 +514,12 @@ class GroupField {
 
 	private function nested_value_exists( $value, array $keys ): bool {
 		foreach ( $keys as $key ) {
-			if ( empty( $value[ $key ] ) ) {
+			if ( ! isset( $value[ $key ] ) ) {
 				return false;
 			}
 			$value = $value[ $key ];
 		}
-		return true;
-	}
-
-	public function split_field_nested( $fields = [] ) {
-		if ( empty( $fields ) || ! is_array( $fields ) ) {
-			return $fields;
-		}
-
-		$return = [];
-		foreach ( $fields as $key => $value ) {
-			if ( strpos( $value, '.' ) === false ) {
-				continue;
-			}
-
-			$keys                             = explode( '.', $value, 2 );
-			$fields[ $key ]                   = $keys[0];
-			$return['sub_cols'][ $keys[0] ][] = $keys[1];
-		}
-
-		$return['cols'] = $fields;
-		return $return;
+		return ! empty( $value );
 	}
 
 	public static function change_url_ssl( $url ) {
@@ -580,7 +567,7 @@ class GroupField {
 	] ) {
 		$content_template = $this->get_template( $template_id );
 		$cols             = array_keys( $content_template['data'] );
-		$has_nested_cols  = false !== stripos( wp_json_encode( $cols ), '.' );
+		$has_nested_cols  = (bool) array_filter( $cols, fn( $col ) => str_contains( $col, '.' ) );
 
 		foreach ( $data_groups as $data_group ) {
 			if ( ! $this->group_has_matching_cols( $data_group, $cols, $has_nested_cols ) ) {
@@ -597,12 +584,37 @@ class GroupField {
 		}
 	}
 
-	private function group_has_matching_cols( $data_group, $cols, $has_nested_cols ) {
-		if ( $has_nested_cols ) {
+	private function group_has_matching_cols( array $data_group, array $cols, bool $has_nested_cols ): bool {
+		if ( 0 < count( array_intersect( array_keys( $data_group ), $cols ) ) ) {
 			return true;
 		}
 
-		return 0 < count( array_intersect( array_keys( $data_group ), $cols ) );
+		if ( ! $has_nested_cols ) {
+			return false;
+		}
+
+		foreach ( $cols as $col ) {
+			if ( false === strpos( $col, '.' ) ) {
+				continue;
+			}
+
+			$tmp_col     = explode( '.', $col, 2 );
+			$sub_group   = $tmp_col[0];
+			$sub_field   = $tmp_col[1];
+
+			if ( ! isset( $data_group[ $sub_group ] ) || ! is_array( $data_group[ $sub_group ] ) ) {
+				continue;
+			}
+
+			$items = false === is_int( key( $data_group[ $sub_group ] ) ) ? [ $data_group[ $sub_group ] ] : $data_group[ $sub_group ];
+			foreach ( $items as $item ) {
+				if ( is_array( $item ) && isset( $item[ $sub_field ] ) && '' !== $item[ $sub_field ] ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	private function apply_column( $col, &$content, &$content_template, $data_group, $data_column, $options ) {
@@ -612,7 +624,7 @@ class GroupField {
 
 		// Field has no value for this clone.
 		if ( ! isset( $data_group[ $col ] ) ) {
-			return $this->remove_orphan_image_placeholder( $col, $content, $content_template, $data_column );
+			return $this->remove_orphan_placeholder( $col, $content, $content_template, $data_column );
 		}
 
 		if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {
@@ -626,7 +638,7 @@ class GroupField {
 		$this->apply_text_field( $col, $content, $content_template, $data_group, $data_column );
 	}
 
-	private function find_placeholder_image( $content, $needle, $check_src = true ) {
+	private function find_placeholder_image( $content, $needle, $check_src = true ): ?array {
 		if ( empty( $needle ) ) {
 			return null;
 		}
@@ -634,6 +646,7 @@ class GroupField {
 		libxml_use_internal_errors( true );
 		$dom = new \DOMDocument();
 		$dom->loadHTML( $content );
+		libxml_clear_errors();
 
 		foreach ( $dom->getElementsByTagName( 'img' ) as $img ) {
 			$in_srcset = false !== strpos( $img->getAttribute( 'srcset' ), $needle );
@@ -654,23 +667,28 @@ class GroupField {
 		return null;
 	}
 
-	private function remove_orphan_image_placeholder( $col, &$content, $content_template, $data_column ) {
-		if ( ! isset( $data_column[ $col ]['mime_type'] ) || 'image' !== $data_column[ $col ]['mime_type'] ) {
+	private function remove_orphan_placeholder( $col, &$content, $content_template, $data_column ) {
+		if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {
+			$needle      = $this->get_image_needle( $content_template['data'][ $col ]['content'] );
+			$placeholder = $this->find_placeholder_image( $content, $needle );
+			if ( $placeholder ) {
+				$content = str_replace( $placeholder['html'], '', $content );
+			}
+
 			return;
 		}
 
-		$placeholder_content = $content_template['data'][ $col ]['content'];
-		$needle              = substr( $placeholder_content, 0, strlen( $placeholder_content ) - 4 );
-		$placeholder         = $this->find_placeholder_image( $content, $needle );
-
-		if ( $placeholder ) {
-			$content = str_replace( $placeholder['html'], '', $content );
+		$placeholder_content = $content_template['data'][ $col ]['content'] ?? '';
+		if ( '' === $placeholder_content ) {
+			return;
 		}
+
+		$content = str_replace( $placeholder_content, '', $content );
 	}
 
 	private function apply_image_field( $col, &$content, $content_template, $data_group, $data_column ) {
 		$placeholder_content = $content_template['data'][ $col ]['content'];
-		$needle              = substr( $placeholder_content, 0, strlen( $placeholder_content ) - 4 );
+		$needle              = $this->get_image_needle( $placeholder_content );
 		$placeholder         = $this->find_placeholder_image( $content, $needle );
 
 		$clone_has_image = ! empty( $data_group[ $col ] );
@@ -695,12 +713,20 @@ class GroupField {
 		$content = str_replace( $placeholder['html'], $content_image, $content );
 	}
 
+	private function get_image_needle( $placeholder_content ): string {
+		// Handle placeholder_content is []
+		if ( ! is_string( $placeholder_content ) || '' === $placeholder_content ) {
+			return '';
+		}
+		return substr( $placeholder_content, 0, strlen( $placeholder_content ) - 4 );
+	}
+
 	private function apply_nested_subfield( $col, &$content, $content_template, $data_group, $data_column ) {
 		$tmp_col = explode( '.', $col, 2 );
 		array_shift( $tmp_col );
 
 		$data_sub_column = array_filter( $data_column, function ( $k ) use ( $tmp_col ) {
-			return $k == $tmp_col[0];
+			return $k === $tmp_col[0];
 		}, ARRAY_FILTER_USE_KEY );
 
 		ob_start();
@@ -716,18 +742,23 @@ class GroupField {
 			return;
 		}
 
-		$placeholder = $this->find_placeholder_image( $content, $content_template['data'][ $col ]['content'], false );
+		// Check both src and srcset
+		$needle      = $this->get_image_needle( $content_template['data'][ $col ]['content'] );
+		$placeholder = $this->find_placeholder_image( $content, $needle, true );
 		if ( ! $placeholder ) {
 			return;
 		}
 
-		$domNew = new \DOMDocument();
-		$domNew->loadHTML( $value );
-		foreach ( $domNew->getElementsByTagName( 'img' ) as $img ) {
+		libxml_use_internal_errors( true );
+		$dom_new = new \DOMDocument();
+		$dom_new->loadHTML( $value );
+		libxml_clear_errors();
+
+		foreach ( $dom_new->getElementsByTagName( 'img' ) as $img ) {
 			$value = str_replace(
 				[
 					'width="' . $img->getAttribute( 'width' ) . '"',
-					'height' => 'height="' . $img->getAttribute( 'height' ) . '"',
+					'height="' . $img->getAttribute( 'height' ) . '"',
 					'class="' . $img->getAttribute( 'class' ) . '"',
 				],
 				[
