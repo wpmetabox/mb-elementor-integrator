@@ -167,7 +167,7 @@ class MBGroup extends Widget_Base {
 	}
 
 	public function render_nested_group( $data_groups, $data_column, $group_fields ) {
-		if ( false === is_int( key( $data_groups ) ) ) {
+		if ( ! is_int( key( $data_groups ) ) ) {
 			$data_groups = [ $data_groups ];
 		}
 
@@ -178,7 +178,7 @@ class MBGroup extends Widget_Base {
 					continue;
 				}
 
-				echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ). '">';
+				echo '<div class="mbei-subfield mbei-subfield--' . esc_attr( $key ) . '">';
 				if ( is_array( $value ) && ! empty( $value ) ) {
 					$data_column[ $key ]['fields'] = array_combine( array_column( $data_column[ $key ]['fields'], 'id' ), $data_column[ $key ]['fields'] );
 					$this->render_nested_group( $value, $data_column[ $key ]['fields'], $group_fields );
@@ -254,7 +254,7 @@ class MBGroup extends Widget_Base {
 			return;
 		}
 
-		if ( false === is_int( key( $data_groups ) ) ) {
+		if ( ! is_int( key( $data_groups ) ) ) {
 			$data_groups = [ $data_groups ];
 		}
 
