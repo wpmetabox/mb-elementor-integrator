@@ -82,7 +82,7 @@ class GroupField {
 		// Get Content Template.
 		$content_template = Plugin::instance()->frontend->get_builder_content_for_display( $template, true );
 
-		if ( 0 < count( $sub_group ) ) {
+		if ( count( $sub_group ) ) {
 			libxml_use_internal_errors( true );
 			$dom_template = new \DOMDocument();
 			$dom_template->loadHTML( $content_template );
@@ -125,7 +125,7 @@ class GroupField {
 			}
 			// Check $dynamic_tag is dynamic tag meta box.
 			$tag_data = $dynamic_tags_mageger->tag_text_to_tag_data( $dynamic_tag );
-			if ( false === strpos( $tag_data['name'], 'meta-box-' ) ) {
+			if ( ! str_contains( $tag_data['name'], 'meta-box-' ) ) {
 				continue;
 			}
 			// Get tag content.
@@ -377,7 +377,7 @@ class GroupField {
 		$post_types     = $field_registry->get_by_object_type( $object_type );
 
 		$return_fields = [];
-		if ( 0 < count( $post_types ) ) {
+		if ( count( $post_types ) ) {
 			foreach ( $post_types as $parent_key => $fields ) {
 				// Fields is empty
 				if ( 0 === count( $fields ) ) {
@@ -400,7 +400,7 @@ class GroupField {
 			}
 		}
 
-		if ( ! empty( $key ) && 0 < count( $return_fields ) ) {
+		if ( ! empty( $key ) && count( $return_fields ) ) {
 			return $return_fields[0];
 		}
 
@@ -452,7 +452,7 @@ class GroupField {
 					$field['id'] = $nested . '.' . $field['id'];
 				}
 				$return_fields[] = $field;
-				if ( isset( $field['fields'] ) && 0 < count( $field['fields'] ) ) {
+				if ( isset( $field['fields'] ) && count( $field['fields'] ) ) {
 					$return_fields = array_merge( $return_fields, $this->get_field_type_group( $field['fields'], $field['id'] ) );
 				}
 			}
@@ -466,7 +466,7 @@ class GroupField {
 			return [];
 		}
 
-		if ( false === is_int( key( $values ) ) ) {
+		if ( ! is_int( key( $values ) ) ) {
 			$values = [ $values ];
 		}
 
@@ -523,14 +523,14 @@ class GroupField {
 	}
 
 	public static function change_url_ssl( $url ) {
-		if ( is_ssl() && false === strpos( $url, 'https' ) ) {
+		if ( is_ssl() && ! str_contains( $url, 'https' ) ) {
 			return str_replace( 'http', 'https', $url );
 		}
 		return $url;
 	}
 
 	public function render_nested_group( $data_groups, $data_column ) {
-		if ( false === is_int( key( $data_groups ) ) ) {
+		if ( ! is_int( key( $data_groups ) ) ) {
 			$data_groups = [ $data_groups ];
 		}
 
@@ -585,7 +585,7 @@ class GroupField {
 	}
 
 	private function group_has_matching_cols( array $data_group, array $cols, bool $has_nested_cols ): bool {
-		if ( 0 < count( array_intersect( array_keys( $data_group ), $cols ) ) ) {
+		if ( count( array_intersect( array_keys( $data_group ), $cols ) ) ) {
 			return true;
 		}
 
@@ -594,19 +594,17 @@ class GroupField {
 		}
 
 		foreach ( $cols as $col ) {
-			if ( false === strpos( $col, '.' ) ) {
+			if ( ! str_contains( $col, '.' ) ) {
 				continue;
 			}
 
-			$tmp_col     = explode( '.', $col, 2 );
-			$sub_group   = $tmp_col[0];
-			$sub_field   = $tmp_col[1];
+			[ $sub_group, $sub_field ] = explode( '.', $col, 2 );
 
 			if ( ! isset( $data_group[ $sub_group ] ) || ! is_array( $data_group[ $sub_group ] ) ) {
 				continue;
 			}
 
-			$items = false === is_int( key( $data_group[ $sub_group ] ) ) ? [ $data_group[ $sub_group ] ] : $data_group[ $sub_group ];
+			$items = is_int( key( $data_group[ $sub_group ] ) ) ? $data_group[ $sub_group ] : [ $data_group[ $sub_group ] ];
 			foreach ( $items as $item ) {
 				if ( is_array( $item ) && isset( $item[ $sub_field ] ) && '' !== $item[ $sub_field ] ) {
 					return true;
@@ -667,7 +665,7 @@ class GroupField {
 		return null;
 	}
 
-	private function remove_orphan_placeholder( $col, &$content, $content_template, $data_column ) {
+	private function remove_orphan_placeholder( $col, &$content, $content_template, $data_column ): void {
 		if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {
 			$needle      = $this->get_image_needle( $content_template['data'][ $col ]['content'] );
 			$placeholder = $this->find_placeholder_image( $content, $needle );
@@ -679,11 +677,9 @@ class GroupField {
 		}
 
 		$placeholder_content = $content_template['data'][ $col ]['content'] ?? '';
-		if ( '' === $placeholder_content ) {
-			return;
+		if ( '' !== $placeholder_content ) {
+			$content = str_replace( $placeholder_content, '', $content );
 		}
-
-		$content = str_replace( $placeholder_content, '', $content );
 	}
 
 	private function apply_image_field( $col, &$content, $content_template, $data_group, $data_column ) {

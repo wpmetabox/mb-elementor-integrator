@@ -167,7 +167,7 @@ class MBGroup extends Widget_Base {
 	}
 
 	public function render_nested_group( $data_groups, $data_column, $group_fields ) {
-		if ( false === is_int( key( $data_groups ) ) ) {
+		if ( ! is_int( key( $data_groups ) ) ) {
 			$data_groups = [ $data_groups ];
 		}
 
@@ -254,7 +254,7 @@ class MBGroup extends Widget_Base {
 			return;
 		}
 
-		if ( false === is_int( key( $data_groups ) ) ) {
+		if ( ! is_int( key( $data_groups ) ) ) {
 			$data_groups = [ $data_groups ];
 		}
 
