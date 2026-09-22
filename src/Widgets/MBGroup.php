@@ -11,6 +11,12 @@ class MBGroup extends Widget_Base {
 
 	public function __construct( $data = [], $args = null ) {
 		parent::__construct( $data, $args );
+
+		add_action( 'elementor/editor/after_enqueue_scripts', [ $this, 'mbgroup_script' ] );
+	}
+
+	public function mbgroup_script() {
+		wp_enqueue_script( 'rwmb-mbroup_script', plugins_url( 'src/assets/js/mbgroup.js', dirname( __FILE__ ) ), [ 'jquery' ], RWMB_VER, true );
 	}
 
 	/**
@@ -160,6 +166,58 @@ class MBGroup extends Widget_Base {
 			'mobile_default'  => 10,
 			'selectors'       => [
 				'{{WRAPPER}} .mbei-groups' => 'gap: {{SIZE}}px;',
+			],
+		] );
+
+		$this->end_controls_section();
+
+		$this->start_controls_section( 'section_countdown', [
+			'label' => esc_html__( 'Count Down', 'mb-elementor-integrator' ),
+		] );
+
+		$this->add_control( 'enable_countdown', [
+			'label'       => esc_html__( 'Enable Count Down', 'mb-elementor-integrator' ),
+			'type'        => Controls_Manager::SWITCHER,
+			'label_block' => false,
+		] );
+
+		$this->add_control( 'countdown_days', [
+			'label'       => esc_html__( 'Days', 'mb-elementor-integrator' ),
+			'type'        => Controls_Manager::SELECT2,
+			'label_block' => false,
+			'options'     => [],
+			'condition'   => [
+				'enable_countdown' => 'yes',
+			],
+		] );
+
+		$this->add_control( 'countdown_hours', [
+			'label'       => esc_html__( 'Hours', 'mb-elementor-integrator' ),
+			'type'        => Controls_Manager::SELECT2,
+			'label_block' => false,
+			'options'     => [],
+			'condition'   => [
+				'enable_countdown' => 'yes',
+			],
+		] );
+
+		$this->add_control( 'countdown_minutes', [
+			'label'       => esc_html__( 'Minutes', 'mb-elementor-integrator' ),
+			'type'        => Controls_Manager::SELECT2,
+			'label_block' => false,
+			'options'     => [],
+			'condition'   => [
+				'enable_countdown' => 'yes',
+			],
+		] );
+
+		$this->add_control( 'countdown_seconds', [
+			'label'       => esc_html__( 'Seconds', 'mb-elementor-integrator' ),
+			'type'        => Controls_Manager::SELECT2,
+			'label_block' => false,
+			'options'     => [],
+			'condition'   => [
+				'enable_countdown' => 'yes',
 			],
 		] );
 
