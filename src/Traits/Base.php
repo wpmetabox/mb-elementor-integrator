@@ -27,4 +27,35 @@ trait Base {
 			'groups' => $this->get_option_groups(),
 		] );
 	}
+
+	protected function is_metabox_group_template( $document ) {
+		if ( empty( $document ) ) {
+			return false;
+		}
+
+		if ( 'metabox_group_template' === $document->get_type() ) {
+			return true;
+		}
+
+		$post_id = method_exists( $document, 'get_main_id' ) ? $document->get_main_id() : $document->get_id();
+		if ( ! $post_id ) {
+			return false;
+		}
+
+		$template_type = get_post_meta( $post_id, '_elementor_template_type', true );
+		if ( 'metabox_group_template' === $template_type ) {
+			return true;
+		}
+
+		$terms = get_the_terms( $post_id, 'elementor_library_type' );
+		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+			foreach ( $terms as $term ) {
+				if ( 'metabox_group_template' === $term->slug ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
 }

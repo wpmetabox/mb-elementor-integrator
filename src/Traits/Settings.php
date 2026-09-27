@@ -11,7 +11,7 @@ trait Settings {
 
 	private function get_option_groups() {
 		$document = Plugin::instance()->documents->get_current();
-		if ( ! empty( $document ) && 'metabox_group_template' === $document->get_type() ) {
+		if ( $this->is_metabox_group_template( $document ) ) {
 			$group_field = new GroupField();
 			return $group_field->get_option_dynamic_tag( 'setting' );
 		}
