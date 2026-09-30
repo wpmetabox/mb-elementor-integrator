@@ -14,6 +14,8 @@ class Group extends Single {
 		$properties['location']            = 'single';
 		$properties['support_kit']         = true;
 		$properties['support_site_editor'] = true;
+		$properties['register_type']       = true;
+
 		return $properties;
 	}
 
