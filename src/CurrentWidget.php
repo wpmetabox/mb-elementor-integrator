@@ -5,8 +5,9 @@ class CurrentWidget {
 	private static $name;
 
 	public static function track() {
-		add_filter( 'elementor/widget/before_render_content', [ __CLASS__, 'save_widget_name' ] );
-		add_action( 'elementor/frontend/before_render', [ __CLASS__, 'save_widget_name' ] );
+		// Must run before Elementor Pro Display Conditions ( same hook with priority 10 ) so dynamic tags resolve with the correct widget name.
+		add_filter( 'elementor/widget/before_render_content', [ __CLASS__, 'save_widget_name' ], PHP_INT_MIN );
+		add_action( 'elementor/frontend/before_render', [ __CLASS__, 'save_widget_name' ], PHP_INT_MIN );
 	}
 
 	public static function save_widget_name( $widget ) {
