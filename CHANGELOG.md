@@ -1,3 +1,8 @@
+### 2.2.7 - 2026-10-06
+
+- Fix bug with Elementor carousel widget and image advanced
+- Fix group skin doesn't work when activating WPML
+
 ### 2.2.6 - 2026-09-17
 
 - Fix image advanced in a cloneable group not displayed correctly
