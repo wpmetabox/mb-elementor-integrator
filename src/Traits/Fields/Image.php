@@ -50,8 +50,7 @@ trait Image {
 			return $this->format( $images );
 		}
 
-		$image = reset( $images );
-		return $this->format( $image );
+		return $this->format( reset( $images ) );
 	}
 
 	private function multiple( array $images ): array {
@@ -83,14 +82,11 @@ trait Image {
 		if ( isset( $images['ID'] ) || isset( $images['id'] ) ) {
 			return $this->format( $images );
 		}
-		if ( $this->is_list_of_ids( $images ) ) {
-			return array_map( [ $this, 'format' ], array_values( $images ) );
-		}
 		return array_map( [ $this, 'format' ], array_values( $images ) );
 	}
 
 	private function is_list_of_ids( array $images ): bool {
-		if ( empty( $images ) ) {
+		if ( ! $images ) {
 			return false;
 		}
 		foreach ( $images as $item ) {
@@ -102,6 +98,8 @@ trait Image {
 	}
 
 	/**
+	 * Normalize an attachment ID or info array to Elementor image format.
+	 *
 	 * @param array|int|string $image Attachment info array or ID.
 	 */
 	private function format( $image ): array {

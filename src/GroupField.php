@@ -148,17 +148,20 @@ class GroupField {
 			if ( isset( $tag_data_content['url'] ) ) {
 				$data_replace[ $key ]['content'] = self::change_url_ssl( $tag_data_content['url'] );
 			} elseif ( is_array( $tag_data_content ) && isset( $tag_data_content[0] ) ) {
-				// Gallery / image_advanced: list of [ id, url ]. Keep first URL as needle.
+				// List of [ id, url ]. Keep first URL as the placeholder needle.
 				$first = $tag_data_content[0];
 				if ( is_array( $first ) && ! empty( $first['url'] ) ) {
 					$data_replace[ $key ]['content'] = self::change_url_ssl( $first['url'] );
 				} elseif ( is_array( $first ) && ! empty( $first['id'] ) ) {
-					$src = wp_get_attachment_image_src( (int) $first['id'], 'full' );
+					$src                             = wp_get_attachment_image_src( (int) $first['id'], 'full' );
 					$data_replace[ $key ]['content'] = $src ? self::change_url_ssl( $src[0] ) : '';
 				} else {
-					$data_replace[ $key ]['content'] = $tag_data_content;
+					$data_replace[ $key ]['content'] = '';
 				}
-				$data_replace[ $key ]['gallery'] = true;
+				// Multi-image lists may bind to a carousel skin.
+				if ( count( $tag_data_content ) > 1 ) {
+					$data_replace[ $key ]['gallery'] = true;
+				}
 			} elseif ( isset( $tag_data['settings']['mb_skin_template'] ) ) {
 				$data_replace[ $key ]['content'] = $this->get_placeholder_template( $tag_data['settings']['mb_skin_template'] );
 			} else {
@@ -228,28 +231,23 @@ class GroupField {
 
 	/**
 	 * Collect Meta Box dynamic tags from Elementor 4 atomic widget props.
-	 * Atomic json structure [ '$$type' => 'dynamic', 'value' => [ 'name' => 'meta-box-image', 'settings' => [ 'key' => [ '$$type' => 'string', 'value' => 'group:field' ] ] ] ]
+	 *
+	 * Atomic shape: [ '$$type' => 'dynamic', 'value' => [ 'name' => 'meta-box-image', 'settings' => [...] ] ]
 	 */
-	private function collect_atomic_dynamic_tags( $node, &$results ) {
+	private function collect_atomic_dynamic_tags( $node, array &$results ): void {
 		if ( ! is_array( $node ) ) {
 			return;
 		}
 
-		if ( isset( $node['$$type'] ) && 'dynamic' === $node['$$type'] && isset( $node['value']['name'] ) ) {
+		if ( isset( $node['$$type'], $node['value']['name'] ) && 'dynamic' === $node['$$type'] ) {
 			$name = $node['value']['name'];
-			if ( is_string( $name ) && str_contains( $name, 'meta-box-' ) ) {
-				$settings_raw = $node['value']['settings'] ?? [];
-				$settings     = [];
-				if ( is_array( $settings_raw ) ) {
-					foreach ( $settings_raw as $k => $v ) {
-						if ( is_array( $v ) && array_key_exists( 'value', $v ) ) {
-							$settings[ $k ] = $v['value'];
-						} else {
-							$settings[ $k ] = $v;
-						}
-					}
+			// Accept only Meta Box tag slugs so the rebuilt tag string stays valid.
+			if ( is_string( $name ) && preg_match( '/^meta-box-[a-z0-9_-]+$/i', $name ) ) {
+				$settings = [];
+				foreach ( (array) ( $node['value']['settings'] ?? [] ) as $k => $v ) {
+					$settings[ $k ] = is_array( $v ) && array_key_exists( 'value', $v ) ? $v['value'] : $v;
 				}
-				$tag = '[elementor-tag id="' . dechex( wp_rand( 1, 99999999 ) ) . '" name="' . $name . '" settings="' . urlencode( wp_json_encode( $settings ) ) . '"]';
+				$tag = '[elementor-tag id="' . dechex( wp_rand( 1, 99999999 ) ) . '" name="' . $name . '" settings="' . rawurlencode( wp_json_encode( $settings ) ) . '"]';
 				$results[ 'atomic_' . $name . '_' . md5( $tag ) ] = $tag;
 			}
 		}
@@ -715,21 +713,17 @@ class GroupField {
 	}
 
 	private function find_placeholder_image( $content, $needle, $check_src = true ): ?array {
-		if ( empty( $needle ) ) {
+		if ( ! $needle ) {
 			return null;
 		}
 
-		// Extract the exact <img> markup from the original HTML string so special
-		// characters in attributes (alt, title, etc.) keep the same encoding as
-		// in $content. DOMDocument::saveHTML() re-encodes entities and breaks str_replace.
-		$quoted = preg_quote( $needle, '/' );
-		$pattern = '/<img\b[^>]*(?:src|srcset)=["\'][^"\']*' . $quoted . '[^"\']*["\'][^>]*>/is';
+		// Keep the exact <img> markup from $content. DOMDocument::saveHTML() re-encodes
+		// alt/title and breaks str_replace when the first clone has special characters.
+		$quoted   = preg_quote( $needle, '/' );
+		$boundary = '(?:["\'?#]|\.(?:jpe?g|png|gif|webp|svg|avif|bmp)|-\d+x\d+)';
+		$pattern  = '/<img\b[^>]*(?:src|srcset)=["\'][^"\']*' . $quoted . $boundary . '[^"\']*["\'][^>]*>/is';
 		if ( ! preg_match( $pattern, $content, $m ) ) {
-			// Fallback: try without requiring quote style / attribute order
-			$pattern = '/<img\b[^>]*' . $quoted . '[^>]*>/is';
-			if ( ! preg_match( $pattern, $content, $m ) ) {
-				return null;
-			}
+			return null;
 		}
 
 		$html = $m[0];
@@ -760,48 +754,45 @@ class GroupField {
 
 	private function remove_orphan_placeholder( $col, &$content, $content_template, $data_column ): void {
 		if ( isset( $data_column[ $col ]['mime_type'] ) && 'image' === $data_column[ $col ]['mime_type'] ) {
-			$needle      = $this->get_image_needle( $content_template['data'][ $col ]['content'] );
+			$needle      = $this->get_image_needle( $content_template['data'][ $col ]['content'] ?? '' );
 			$placeholder = $this->find_placeholder_image( $content, $needle );
 			if ( $placeholder ) {
 				$content = str_replace( $placeholder['html'], '', $content );
 			}
-
 			return;
 		}
 
 		$placeholder_content = $content_template['data'][ $col ]['content'] ?? '';
-		if ( '' !== $placeholder_content ) {
+		if ( $placeholder_content ) {
 			$content = str_replace( $placeholder_content, '', $content );
 		}
 	}
 
-	private function apply_image_field( $col, &$content, $content_template, $data_group, $data_column ) {
+	private function apply_image_field( $col, &$content, $content_template, $data_group, $data_column ): void {
 		$field_type      = $data_column[ $col ]['type'] ?? '';
 		$clone_has_image = ! empty( $data_group[ $col ] );
+		$has_carousel    = false !== stripos( $content, 'swiper-wrapper' );
+		$is_gallery      = in_array( $field_type, [ 'image_advanced', 'image_upload' ], true )
+			|| ! empty( $content_template['data'][ $col ]['gallery'] );
 
-		// Gallery fields (image_advanced / image_upload) → Image Carousel slides.
-		// Never route these through single <img> replace (that overwrites e-image).
-		if ( in_array( $field_type, [ 'image_advanced', 'image_upload' ], true )
-			|| ! empty( $content_template['data'][ $col ]['gallery'] )
-		) {
-			$this->apply_carousel_images( $col, $content, $content_template, $data_group, $data_column, $clone_has_image );
+		// Multi-image fields bound to a carousel. Single Image widgets stay on the single path.
+		if ( $has_carousel && $is_gallery ) {
+			$this->apply_carousel_images( $col, $content, $data_group, $data_column, $clone_has_image );
 			return;
 		}
 
-		// --- Single image (single_image / e-image) ---
 		$placeholder_content = $content_template['data'][ $col ]['content'] ?? '';
 		$needle              = $this->get_image_needle( is_string( $placeholder_content ) ? $placeholder_content : '' );
 		$placeholder         = $needle ? $this->find_placeholder_image( $content, $needle ) : null;
-
-		// Prefer e-image-base (Elementor 4 atomic single image), never touch carousel imgs.
-		if ( ! $placeholder ) {
+		if ( ! $placeholder && $needle ) {
 			$placeholder = $this->find_single_e_image( $content, $needle );
 		}
 
-		if ( ! $placeholder || ! $clone_has_image ) {
-			if ( $placeholder && ! $clone_has_image ) {
-				$content = str_replace( $placeholder['html'], '', $content );
-			}
+		if ( ! $placeholder ) {
+			return;
+		}
+		if ( ! $clone_has_image ) {
+			$content = str_replace( $placeholder['html'], '', $content );
 			return;
 		}
 
@@ -816,65 +807,47 @@ class GroupField {
 		}
 
 		$size = [ $placeholder['width'] ?: null, $placeholder['height'] ?: null ];
-		if ( empty( $size[0] ) && empty( $size[1] ) ) {
+		if ( ! $size[0] && ! $size[1] ) {
 			$size = 'full';
 		}
 		$attr = [];
 		if ( ! empty( $placeholder['class'] ) ) {
 			$attr['class'] = $placeholder['class'];
 		}
-		$content_image = wp_get_attachment_image( (int) $image['ID'], $size, false, $attr );
-		$content       = str_replace( $placeholder['html'], $content_image, $content );
+		$content = str_replace(
+			$placeholder['html'],
+			wp_get_attachment_image( (int) $image['ID'], $size, false, $attr ),
+			$content
+		);
 	}
 
 	/**
 	 * Replace Image Carousel slides for an image_advanced (or similar) field.
 	 */
-	private function apply_carousel_images( $col, &$content, $content_template, $data_group, $data_column, $clone_has_image ) {
-		if ( ! preg_match( '/<div class="elementor-image-carousel swiper-wrapper"[^>]*>(.*?)<\/div>\s*<\/div>/is', $content, $m ) ) {
-			// Broader: swiper-wrapper block.
-			if ( ! preg_match( '/(<div[^>]*class="[^"]*swiper-wrapper[^"]*"[^>]*>)(.*?)(<\/div>)/is', $content, $m ) ) {
-				return;
-			}
-			$wrapper_open = $m[1];
-			$old_slides   = $m[2];
-			$wrapper_close = $m[3];
-			$full_match   = $m[0];
-		} else {
-			$full_match    = $m[0];
-			$old_slides    = $m[1];
-			$wrapper_open  = '<div class="elementor-image-carousel swiper-wrapper">';
-			$wrapper_close = '</div>';
-		}
-
+	private function apply_carousel_images( $col, &$content, $data_group, $data_column, $clone_has_image ): void {
 		if ( ! $clone_has_image ) {
-			if ( preg_match( '/(<div[^>]*class="[^"]*swiper-wrapper[^"]*"[^>]*>)(.*?)(<\/div>)/is', $content, $wm ) ) {
-				$content = str_replace( $wm[0], $wm[1] . $wm[3], $content );
-			}
+			$this->replace_swiper_inner( $content, '' );
 			return;
 		}
 
 		$raw_values = $data_group[ $col ];
-		if ( ! is_array( $raw_values ) || isset( $raw_values['ID'] ) || isset( $raw_values['id'] ) ) {
-			$values = [ $raw_values ];
-		} else {
-			$values = $raw_values;
+		$values     = ( ! is_array( $raw_values ) || isset( $raw_values['ID'] ) || isset( $raw_values['id'] ) )
+			? [ $raw_values ]
+			: $raw_values;
+
+		$ids = [];
+		foreach ( $values as $val ) {
+			$image = $this->get_image_for_dynamic_tag( $val, $data_column[ $col ]['type'] ?? '' );
+			if ( ! empty( $image['ID'] ) ) {
+				$ids[] = (int) $image['ID'];
+			}
 		}
 
 		$slides = '';
-		$total  = 0;
-		$ids    = [];
-		foreach ( $values as $val ) {
-			$image = $this->get_image_for_dynamic_tag( $val, $data_column[ $col ]['type'] ?? '' );
-			if ( empty( $image['ID'] ) ) {
-				continue;
-			}
-			$ids[] = (int) $image['ID'];
-			$total++;
-		}
-		$i = 0;
+		$total  = count( $ids );
+		$i      = 0;
 		foreach ( $ids as $id ) {
-			$i++;
+			++$i;
 			$img = wp_get_attachment_image( $id, 'thumbnail', false, [ 'class' => 'swiper-slide-image' ] );
 			if ( ! $img ) {
 				continue;
@@ -887,38 +860,56 @@ class GroupField {
 			);
 		}
 
-		if ( '' === $slides ) {
-			return;
-		}
-
-		// Replace only the slides inside swiper-wrapper, keep wrapper markup.
-		if ( preg_match( '/(<div[^>]*class="[^"]*swiper-wrapper[^"]*"[^>]*>)(.*?)(<\/div>)/is', $content, $wm ) ) {
-			$content = str_replace( $wm[0], $wm[1] . $slides . $wm[3], $content );
+		if ( $slides ) {
+			$this->replace_swiper_inner( $content, $slides );
 		}
 	}
 
 	/**
-	 * Find Elementor 4 atomic single image (<img class="e-image-base">).
-	 * Skips carousel images (swiper-slide-image).
+	 * Replace the inner HTML of the first swiper-wrapper div.
 	 */
-	private function find_single_e_image( $content, $needle = '' ): ?array {
-		if ( ! preg_match_all( '/<img\b[^>]*>/is', $content, $all ) ) {
-			return null;
+	private function replace_swiper_inner( string &$content, string $inner ): bool {
+		if ( ! preg_match( '/<div[^>]*class="[^"]*swiper-wrapper[^"]*"[^>]*>/is', $content, $m, PREG_OFFSET_CAPTURE ) ) {
+			return false;
 		}
 
-		$path = $needle ? $this->get_image_needle( $needle ) : '';
+		$start = $m[0][1] + strlen( $m[0][0] );
+		$depth = 1;
+		$pos   = $start;
+		$len   = strlen( $content );
+
+		while ( $pos < $len && $depth > 0 ) {
+			if ( ! preg_match( '/<\/?div\b[^>]*>/is', $content, $tag, PREG_OFFSET_CAPTURE, $pos ) ) {
+				return false;
+			}
+			$tag_html = $tag[0][0];
+			$tag_pos  = $tag[0][1];
+			$depth   += ( 0 === stripos( $tag_html, '</' ) ) ? -1 : 1;
+			if ( 0 === $depth ) {
+				$content = substr( $content, 0, $start ) . $inner . substr( $content, $tag_pos );
+				return true;
+			}
+			$pos = $tag_pos + strlen( $tag_html );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Find Elementor 4 atomic single image (<img class="e-image-base">).
+	 * Skips carousel images. Requires a URL needle so two images in one skin do not collide.
+	 */
+	private function find_single_e_image( string $content, string $needle = '' ): ?array {
+		if ( ! $needle || ! preg_match_all( '/<img\b[^>]*>/is', $content, $all ) ) {
+			return null;
+		}
 
 		foreach ( $all[0] as $html ) {
 			if ( false !== stripos( $html, 'swiper-slide-image' ) ) {
 				continue;
 			}
-
-			$is_e_image = false !== stripos( $html, 'e-image-base' );
-			if ( ! $is_e_image ) {
-				// Non-atomic img: only accept when URL needle matches.
-				if ( ! $path || ( false === strpos( $html, $path ) && false === strpos( $html, $needle ) ) ) {
-					continue;
-				}
+			if ( ! $this->html_has_image_needle( $html, $needle ) ) {
+				continue;
 			}
 
 			libxml_use_internal_errors( true );
@@ -939,22 +930,31 @@ class GroupField {
 		return null;
 	}
 
+	/**
+	 * True when $html contains $needle as a full image path segment.
+	 */
+	private function html_has_image_needle( string $html, string $needle ): bool {
+		if ( ! $needle ) {
+			return false;
+		}
+		$quoted   = preg_quote( $needle, '/' );
+		$boundary = '(?:["\'?#]|\.(?:jpe?g|png|gif|webp|svg|avif|bmp)|-\d+x\d+)';
+		return (bool) preg_match( '/' . $quoted . $boundary . '/i', $html );
+	}
+
 	private function get_image_needle( $placeholder_content ): string {
-		// Handle placeholder_content is []
-		if ( ! is_string( $placeholder_content ) || '' === $placeholder_content ) {
+		if ( ! is_string( $placeholder_content ) || ! $placeholder_content ) {
 			return '';
 		}
-		// Use a stable portion of the URL (path without query/hash, drop common extensions)
-		$path = parse_url( $placeholder_content, PHP_URL_PATH );
-		if ( ! is_string( $path ) || '' === $path ) {
+		$path = wp_parse_url( $placeholder_content, PHP_URL_PATH );
+		if ( ! is_string( $path ) || ! $path ) {
 			$path = $placeholder_content;
 		}
 		$base = preg_replace( '/\.(jpe?g|png|gif|webp|svg|avif|bmp)(\?.*)?$/i', '', $path );
-		// Prefer a unique trailing segment long enough to avoid collisions
-		return $base !== '' ? $base : substr( $placeholder_content, 0, max( 0, strlen( $placeholder_content ) - 4 ) );
+		return $base ?: substr( $placeholder_content, 0, max( 0, strlen( $placeholder_content ) - 4 ) );
 	}
 
-	private function apply_nested_subfield( $col, &$content, $content_template, $data_group, $data_column ) {
+	private function apply_nested_subfield( $col, &$content, $content_template, $data_group, $data_column ): void {
 		$tmp_col = explode( '.', $col, 2 );
 		array_shift( $tmp_col );
 
@@ -964,30 +964,20 @@ class GroupField {
 
 		ob_start();
 		$this->render_nested_group( $data_group, $data_sub_column );
-		$value = ob_get_contents();
-		ob_end_clean();
+		$value = ob_get_clean();
 
 		$is_image = isset( $data_sub_column[ $tmp_col[0] ]['mime_type'] ) && 'image' === $data_sub_column[ $tmp_col[0] ]['mime_type'];
 
 		if ( ! $is_image ) {
-			$placeholder_content = (string) ( $content_template['data'][ $col ]['content'] ?? '' );
-			$variants            = array_unique( array_filter( [
-				$placeholder_content,
-				str_replace( "'", '&#8217;', $placeholder_content ),
-				html_entity_decode( $placeholder_content, ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
-			] ) );
-			foreach ( $variants as $variant ) {
-				if ( $variant !== '' && false !== strpos( $content, $variant ) ) {
-					$content = str_replace( $variant, $value, $content );
-					return;
-				}
-			}
-			$content = str_replace( $placeholder_content, $value, $content );
+			$this->replace_placeholder_text(
+				$content,
+				(string) ( $content_template['data'][ $col ]['content'] ?? '' ),
+				$value
+			);
 			return;
 		}
 
-		// Check both src and srcset
-		$needle      = $this->get_image_needle( $content_template['data'][ $col ]['content'] );
+		$needle      = $this->get_image_needle( $content_template['data'][ $col ]['content'] ?? '' );
 		$placeholder = $this->find_placeholder_image( $content, $needle, true );
 		if ( ! $placeholder ) {
 			return;
@@ -1017,7 +1007,7 @@ class GroupField {
 		$content = str_replace( $placeholder['html'], $value, $content );
 	}
 
-	private function apply_group_field( $col, &$content, $content_template, $data_group, $data_column, $options ) {
+	private function apply_group_field( $col, &$content, $content_template, $data_group, $data_column, $options ): void {
 		$data_sub_column = isset( $data_column[ $col ]['fields'] )
 			? array_combine( array_column( $data_column[ $col ]['fields'], 'id' ), $data_column[ $col ]['fields'] )
 			: $data_column[ $col ];
@@ -1028,76 +1018,67 @@ class GroupField {
 		} else {
 			$this->render_nested_group( $data_group[ $col ], $data_sub_column );
 		}
-		$value = ob_get_contents();
-		ob_end_clean();
+		$value = ob_get_clean();
 
 		$content = str_replace( $content_template['data'][ $col ]['content'], $value, $content );
 	}
 
-	private function apply_text_field( $col, &$content, &$content_template, $data_group, $data_column ) {
+	private function apply_text_field( $col, &$content, &$content_template, $data_group, $data_column ): void {
 		ob_start();
 		$this->display_field( $data_group[ $col ], $data_column[ $col ], true );
-		$value = ob_get_contents();
-		ob_end_clean();
+		$value = ob_get_clean();
 
 		$placeholder = (string) ( $content_template['data'][ $col ]['content'] ?? '' );
-		if ( '' === $placeholder ) {
+		if ( ! $placeholder ) {
 			return;
 		}
 
-		// Normalize typographic / special characters so placeholder matches HTML
-		// regardless of how Elementor or the browser encoded the first clone.
-		$map = [
-			'‘' => "'", '’' => "'", '‚' => "'", '‛' => "'",
-			'“' => '"', '”' => '"', '„' => '"', '‟' => '"',
-			'–' => '-', '—' => '-', '−' => '-',
-			'®' => '(R)', '©' => '(C)', '™' => '(TM)',
-			'&#8216;' => "'", '&#8217;' => "'", '&#8218;' => "'",
-			'&#8220;' => '"', '&#8221;' => '"', '&#8222;' => '"',
-			'&#8211;' => '-', '&#8212;' => '-',
-			'&lsquo;' => "'", '&rsquo;' => "'", '&sbquo;' => "'",
-			'&ldquo;' => '"', '&rdquo;' => '"', '&bdquo;' => '"',
-			'&ndash;' => '-', '&mdash;' => '-',
-			'&reg;' => '(R)', '&#174;' => '(R)',
-			'&copy;' => '(C)', '&#169;' => '(C)',
-			'&trade;' => '(TM)', '&#8482;' => '(TM)',
-			'&quot;' => '"', '&#039;' => "'", '&#39;' => "'",
-		];
+		$matched = $this->replace_placeholder_text( $content, $placeholder, $value );
+		if ( $matched ) {
+			$content_template['data'][ $col ]['content'] = $matched;
+		}
+	}
 
-		$normalize = static function ( $str ) use ( $map ) {
-			$str = html_entity_decode( (string) $str, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-			return strtr( $str, $map );
-		};
+	/**
+	 * Replace the first matching encoding of $placeholder in $content.
+	 *
+	 * @return string Matched variant, or empty string when nothing matched.
+	 */
+	private function replace_placeholder_text( string &$content, string $placeholder, string $value ): string {
+		if ( ! $placeholder ) {
+			return '';
+		}
 
-		$norm_content     = $normalize( $content );
-		$norm_placeholder = $normalize( $placeholder );
-		$norm_value       = $normalize( $value );
-
-		// Prefer exact match on normalized content, fall back to raw.
-		if ( false !== strpos( $norm_content, $norm_placeholder ) ) {
-			// Rebuild by replacing the first occurrence of the normalized placeholder
-			// while keeping surrounding (possibly entity-encoded) markup intact.
-			$pos = strpos( $norm_content, $norm_placeholder );
-			// Walk original $content with same offsets only works if lengths match;
-			// instead replace all common encoded variants of the placeholder.
-			$variants = array_unique( [
-				$placeholder,
-				html_entity_decode( $placeholder, ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
-				htmlspecialchars( html_entity_decode( $placeholder, ENT_QUOTES | ENT_HTML5, 'UTF-8' ), ENT_QUOTES, 'UTF-8' ),
-				strtr( $placeholder, $map ),
-				$norm_placeholder,
-			] );
-			foreach ( $variants as $variant ) {
-				if ( $variant !== '' && false !== strpos( $content, $variant ) ) {
-					$content = str_replace( $variant, $value, $content );
-					$content_template['data'][ $col ]['content'] = $variant;
-					return;
-				}
+		foreach ( $this->placeholder_variants( $placeholder ) as $variant ) {
+			if ( false !== strpos( $content, $variant ) ) {
+				$content = str_replace( $variant, $value, $content );
+				return $variant;
 			}
 		}
 
-		// Last resort: replace raw placeholder.
-		$content = str_replace( $placeholder, $value, $content );
+		return '';
+	}
+
+	/**
+	 * Build HTML encoding variants of a placeholder string.
+	 *
+	 * Covers Unicode glyphs and common numeric / named entities. Does not collapse
+	 * en dash to ASCII hyphen, which would match CSS class names by mistake.
+	 */
+	private function placeholder_variants( string $placeholder ): array {
+		$decoded = html_entity_decode( $placeholder, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$glyphs  = [ '–', '—', '‘', '’', '“', '”', '®', '©', '™', "'" ];
+		$numeric = [ '&#8211;', '&#8212;', '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#174;', '&#169;', '&#8482;', '&#039;' ];
+		$named   = [ '&ndash;', '&mdash;', '&lsquo;', '&rsquo;', '&ldquo;', '&rdquo;', '&reg;', '&copy;', '&trade;', '&#039;' ];
+
+		return array_values( array_unique( array_filter( [
+			$placeholder,
+			$decoded,
+			htmlspecialchars( $decoded, ENT_QUOTES, 'UTF-8' ),
+			str_replace( $glyphs, $numeric, $decoded ),
+			str_replace( $glyphs, $named, $decoded ),
+			str_replace( "'", '&#8217;', $decoded ),
+		] ) ) );
 	}
 
 	public function display_data_widget( $data_groups, $data_column, $options = [
