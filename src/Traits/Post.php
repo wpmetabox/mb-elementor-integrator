@@ -59,22 +59,46 @@ trait Post {
 			return rwmb_meta( $field_id );
 		}
 
-		$group_field = new GroupField();
-		ob_start();
-		$group_field->get_value_dynamic_tag( $post_type, $field_id, $this->get_settings( 'mb_skin_template' ) );
-		$valueField = ob_get_contents();
-		ob_end_clean();
+		// Sub-field inside a Meta Box group (e.g. group_id:image_field).
+		$group_value = rwmb_get_value( $post_type );
+		if ( empty( $group_value ) ) {
+			return null;
+		}
 
-		if ( ! empty( $valueField ) ) {
-			$image = wp_get_attachment_image_src( $valueField, 'full' );
-			if ( ! empty( $image ) ) {
+		// Cloneable group: use the first clone for dynamic-tag preview / skin placeholder.
+		if ( is_array( $group_value ) && is_int( key( $group_value ) ) ) {
+			$group_value = reset( $group_value );
+		}
+
+		if ( ! is_array( $group_value ) || ! array_key_exists( $field_id, $group_value ) ) {
+			// Fallback to previous output-capture behaviour.
+			ob_start();
+			( new GroupField() )->get_value_dynamic_tag( $post_type, $field_id, $this->get_settings( 'mb_skin_template' ) );
+			$value_field = ob_get_clean();
+			if ( is_numeric( $value_field ) ) {
+				$id  = (int) $value_field;
+				$src = wp_get_attachment_image_src( $id, 'full' );
 				return [
-					'ID'       => $valueField,
-					'full_url' => $image[0],
+					'ID'       => $id,
+					'full_url' => $src[0] ?? '',
 				];
 			}
-			return $valueField;
+			return $value_field ?: null;
 		}
+
+		$value = $group_value[ $field_id ];
+
+		// One attachment ID.
+		if ( is_numeric( $value ) ) {
+			$id  = (int) $value;
+			$src = wp_get_attachment_image_src( $id, 'full' );
+			return [
+				'ID'       => $id,
+				'full_url' => $src[0] ?? '',
+			];
+		}
+
+		return $value;
 	}
 
 	private function the_value() {

@@ -15,7 +15,16 @@ trait Image {
 	public function get_value( array $options = [] ) {
 		$images = $this->handle_get_value();
 
-		if ( empty( $images ) || ! is_array( $images ) ) {
+		if ( empty( $images ) ) {
+			return [];
+		}
+
+		// Normalize scalar attachment ID to list.
+		if ( is_numeric( $images ) ) {
+			$images = [ (int) $images ];
+		}
+
+		if ( ! is_array( $images ) ) {
 			return [];
 		}
 
@@ -37,32 +46,83 @@ trait Image {
 	}
 
 	private function single( array $images ): array {
-		if ( isset( $images['ID'] ) ) {
+		if ( isset( $images['ID'] ) || isset( $images['id'] ) ) {
 			return $this->format( $images );
 		}
 
-		$image = reset( $images );
-		return $this->format( $image );
+		return $this->format( reset( $images ) );
 	}
 
 	private function multiple( array $images ): array {
-		if ( isset( $images['ID'] ) ) {
+		if ( isset( $images['ID'] ) || isset( $images['id'] ) ) {
 			$images = [ $images ];
 		}
-		if ( array_key_first( $images ) === 0 && ( count( $images ) - 1 ) === array_key_last( $images ) ) {
-			$images = array_merge_recursive( ...$images );
+
+		// Flat list of attachment IDs: [ 12, 34, 56 ]
+		if ( $this->is_list_of_ids( $images ) ) {
+			return array_map( [ $this, 'format' ], array_values( $images ) );
 		}
-		return array_map( [ $this, 'format' ], $images );
+
+		// List of info arrays: [ 0 => [ID=>..], 1 => [ID=>..] ]
+		if ( array_key_first( $images ) === 0 && ( count( $images ) - 1 ) === array_key_last( $images ) ) {
+			$first = reset( $images );
+			if ( is_array( $first ) && ( isset( $first['ID'] ) || isset( $first['id'] ) ) ) {
+				return array_map( [ $this, 'format' ], $images );
+			}
+			// Avoid array_merge_recursive on non-array items (IDs).
+			if ( is_array( $first ) ) {
+				$images = array_merge_recursive( ...$images );
+			}
+		}
+
+		return array_map( [ $this, 'format' ], array_values( $images ) );
 	}
 
 	private function default( array $images ): array {
-		return isset( $images['ID'] ) ? $this->format( $images ) : array_map( [ $this, 'format' ], $images );
+		if ( isset( $images['ID'] ) || isset( $images['id'] ) ) {
+			return $this->format( $images );
+		}
+		return array_map( [ $this, 'format' ], array_values( $images ) );
 	}
 
-	private function format( array $image ): array {
+	private function is_list_of_ids( array $images ): bool {
+		if ( ! $images ) {
+			return false;
+		}
+		foreach ( $images as $item ) {
+			if ( ! is_numeric( $item ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Normalize an attachment ID or info array to Elementor image format.
+	 *
+	 * @param array|int|string $image Attachment info array or ID.
+	 */
+	private function format( $image ): array {
+		if ( is_numeric( $image ) ) {
+			$id  = (int) $image;
+			$src = wp_get_attachment_image_src( $id, 'full' );
+			return [
+				'id'  => $id,
+				'url' => $src[0] ?? '',
+			];
+		}
+
+		if ( ! is_array( $image ) ) {
+			return [
+				'id'  => 0,
+				'url' => '',
+			];
+		}
+
+		$id = (int) ( $image['ID'] ?? $image['id'] ?? 0 );
 		return [
-			'id'  => $image['ID'],
-			'url' => $image['full_url'] ?? '',
+			'id'  => $id,
+			'url' => $image['full_url'] ?? $image['url'] ?? ( $id ? ( wp_get_attachment_image_src( $id, 'full' )[0] ?? '' ) : '' ),
 		];
 	}
 }
