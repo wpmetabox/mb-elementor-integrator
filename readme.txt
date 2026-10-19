@@ -5,7 +5,7 @@ Tags: meta box, custom fields, elementor, dynamic tags
 Requires at least: 6.7
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 2.2.7
+Stable tag: 2.2.8
 License: GPLv2 or later
 
 Integrates Meta Box's custom fields with the Elementor page builder via dynamic tags.
@@ -75,6 +75,10 @@ Then install **MB Elementor Integration** extension
 2. Connect to a Meta Box Field
 
 == Changelog ==
+
+= 2.2.8 - 2026-10-19 =
+
+- Fix image metas have special characters
 
 = 2.2.7 - 2026-10-06 =
 

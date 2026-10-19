@@ -1,3 +1,7 @@
+### 2.2.8 - 2026-10-19
+
+- Fix image metas have special characters
+
 ### 2.2.7 - 2026-10-06
 
 - Fix bug with Elementor carousel widget and image advanced
