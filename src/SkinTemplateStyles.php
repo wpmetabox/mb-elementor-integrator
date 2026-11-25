@@ -50,12 +50,8 @@ class SkinTemplateStyles {
 			}
 
 			foreach ( (array) ($settings['mb_skin_template'] ?? []) as $id ) {
-				$new = apply_filters( 'wpml_object_id', $id, 'elementor_library', true );
-				if ( is_numeric( $new ) ) {
-					$ids[] = (int) $new;
-				} elseif ( is_numeric( $id ) ) {
-					$ids[] = (int) $id;
-				}
+				$new   = (int) apply_filters( 'wpml_object_id', $id, 'elementor_library', true );
+				$ids[] = $new > 0 ? $new : (int) $id;
 			}
 		} );
 
