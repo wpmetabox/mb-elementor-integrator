@@ -36,18 +36,10 @@ class SkinTemplateStyles {
 	}
 
 	private function get_skin_ids( int $post_id ): array {
-		if ( isset( self::$skin_ids[ $post_id ] ) ) {
-			return self::$skin_ids[ $post_id ];
-		}
-
 		self::$skin_ids[ $post_id ] = [];
 
-		$document = Plugin::instance()->documents->get( $post_id );
+		$document = Plugin::instance()->documents->get_doc_for_frontend( $post_id );
 		$elements = $document ? $document->get_elements_data() : [];
-
-		if ( empty( $elements ) ) {
-			return [];
-		}
 
 		$ids = [];
 
