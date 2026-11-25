@@ -6,18 +6,16 @@ use Elementor\Plugin;
 
 class SkinTemplateStyles {
 
-	private static $rendered = [];
+	private static array $rendered = [];
 
-	private static $skin_ids = [];
+	private static array $skin_ids = [];
 
 	public function __construct() {
 		add_action( 'elementor/post/render', [ $this, 'render_skin_templates' ] );
 		add_filter( 'elementor/document/related_posts', [ $this, 'add_related_skins' ], 10, 2 );
 	}
 
-	public function render_skin_templates( $post_id ) {
-		$post_id = (int) $post_id;
-
+	public function render_skin_templates( int $post_id ): void {
 		if ( ! $post_id || isset( self::$rendered[ $post_id ] ) ) {
 			return;
 		}
@@ -31,13 +29,13 @@ class SkinTemplateStyles {
 		}
 	}
 
-	public function add_related_skins( $related, $post_id = null ) {
+	public function add_related_skins( $related, ?int $post_id = null ): array {
 		$related = (array) $related;
 
-		return array_values( array_unique( array_filter( array_map( 'intval', array_merge( $related, $this->get_skin_ids( (int) $post_id ) ) ) ) ) );
+		return array_values( array_unique( array_merge( array_map( 'intval', $related ), $this->get_skin_ids( (int) $post_id ) ) ) );
 	}
 
-	private function get_skin_ids( $post_id ) {
+	private function get_skin_ids( int $post_id ): array {
 		if ( isset( self::$skin_ids[ $post_id ] ) ) {
 			return self::$skin_ids[ $post_id ];
 		}
@@ -55,14 +53,13 @@ class SkinTemplateStyles {
 
 		Plugin::instance()->db->iterate_data( $elements, function ( $element ) use ( &$ids ) {
 			$settings = $element['settings'] ?? [];
-			$is_group = 'widget' === ( $element['elType'] ?? '' ) && 'metabox-group' === ( $element['widgetType'] ?? '' );
-			$skin     = ( $settings['_skin'] ?? '' ) ?: 'meta_box_skin_group';
+			if ( 'widget' !== ( $element['elType'] ?? '' ) || 'metabox-group' !== ( $element['widgetType'] ?? '' ) ) {
+				return;
+			}
 
-			if ( $is_group && ! empty( $settings['mb_skin_template'] ) && 'meta_box_skin_group' === $skin ) {
-				foreach ( (array) $settings['mb_skin_template'] as $id ) {
-					if ( is_numeric( $id ) ) {
-						$ids[] = (int) $id;
-					}
+			foreach ( (array) ($settings['mb_skin_template'] ?? []) as $id ) {
+				if ( is_numeric( $id ) ) {
+					$ids[] = (int) apply_filters( 'wpml_object_id', $id, 'elementor_library', true );
 				}
 			}
 		} );
