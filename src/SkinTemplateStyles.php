@@ -36,22 +36,25 @@ class SkinTemplateStyles {
 	}
 
 	private function get_skin_ids( int $post_id ): array {
-		self::$skin_ids[ $post_id ] = [];
+		if ( isset( self::$skin_ids[ $post_id ] ) ) {
+			return self::$skin_ids[ $post_id ];
+		}
 
 		$document = Plugin::instance()->documents->get_doc_for_frontend( $post_id );
-		$elements = $document ? $document->get_elements_data() : [];
+		$ids      = [];
 
-		$ids = [];
-
-		Plugin::instance()->db->iterate_data( $elements, function ( $element ) use ( &$ids ) {
+		Plugin::instance()->db->iterate_data( $document ? $document->get_elements_data() : [], function ( $element ) use ( &$ids ) {
 			$settings = $element['settings'] ?? [];
 			if ( 'widget' !== ( $element['elType'] ?? '' ) || 'metabox-group' !== ( $element['widgetType'] ?? '' ) ) {
 				return;
 			}
 
 			foreach ( (array) ($settings['mb_skin_template'] ?? []) as $id ) {
-				if ( is_numeric( $id ) ) {
-					$ids[] = (int) apply_filters( 'wpml_object_id', $id, 'elementor_library', true );
+				$new = apply_filters( 'wpml_object_id', $id, 'elementor_library', true );
+				if ( is_numeric( $new ) ) {
+					$ids[] = (int) $new;
+				} elseif ( is_numeric( $id ) ) {
+					$ids[] = (int) $id;
 				}
 			}
 		} );
