@@ -61,6 +61,7 @@ class Loader {
 
 	public function modules() {
 		new GroupField();
+		new SkinTemplateStyles();
 	}
 
 	public function register_conditions( $conditions_manager ) {
