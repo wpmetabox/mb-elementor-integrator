@@ -48,7 +48,7 @@ class GroupField {
 
 	public function get_placeholder_template( $template_id ) {
 		$templates     = $this->get_skin_template();
-		$template_name = strtolower( $templates[ $template_id ] );
+		$template_name = strtolower( $templates[ $template_id ] ?? '' );
 		return "{{ placeholder template $template_name }}";
 	}
 
