@@ -2,7 +2,6 @@
 
 namespace MBEI;
 
-use Elementor\Plugin;
 use Elementor\Modules\AtomicWidgets\Utils\Utils;
 
 class SkinTemplateStyles {
@@ -16,7 +15,8 @@ class SkinTemplateStyles {
 		add_filter( 'elementor/document/related_posts', [ $this, 'add_related_skins' ], 10, 2 );
 	}
 
-	public function render_skin_templates( int $post_id ): void {
+	public function render_skin_templates( $post_id ): void {
+		$post_id = (int) $post_id;
 		if ( ! $post_id || isset( self::$rendered[ $post_id ] ) ) {
 			return;
 		}

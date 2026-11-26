@@ -61,6 +61,9 @@ class GroupField {
 
 		// Get elements settings.
 		$document = Plugin::instance()->documents->get( $template );
+		if ( ! $document ) {
+			return;
+		}
 		$settings = $document->get_elements_data();
 
 		return [ $settings, $template ];
@@ -642,8 +645,11 @@ class GroupField {
 		'loop_footer' => '',
 	] ) {
 		$content_template = $this->get_template( $template_id );
-		$cols             = array_keys( $content_template['data'] );
-		$has_nested_cols  = (bool) array_filter( $cols, fn( $col ) => str_contains( $col, '.' ) );
+		if ( ! $content_template ) {
+			return;
+		}
+		$cols            = array_keys( $content_template['data'] );
+		$has_nested_cols = (bool) array_filter( $cols, fn( $col ) => str_contains( $col, '.' ) );
 
 		foreach ( $data_groups as $data_group ) {
 			if ( ! $this->group_has_matching_cols( $data_group, $cols, $has_nested_cols ) ) {
