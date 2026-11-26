@@ -3,6 +3,7 @@
 namespace MBEI;
 
 use Elementor\Plugin;
+use Elementor\Modules\AtomicWidgets\Utils\Utils;
 
 class SkinTemplateStyles {
 
@@ -23,15 +24,11 @@ class SkinTemplateStyles {
 		self::$rendered[ $post_id ] = true;
 
 		foreach ( $this->get_skin_ids( $post_id ) as $skin_id ) {
-			if ( ! isset( self::$rendered[ $skin_id ] ) ) {
-				do_action( 'elementor/post/render', $skin_id );
-			}
+			do_action( 'elementor/post/render', $skin_id );
 		}
 	}
 
-	public function add_related_skins( $related, ?int $post_id = null ): array {
-		$related = (array) $related;
-
+	public function add_related_skins( array $related, ?int $post_id = null ): array {
 		return array_values( array_unique( array_merge( array_map( 'intval', $related ), $this->get_skin_ids( (int) $post_id ) ) ) );
 	}
 
@@ -40,18 +37,15 @@ class SkinTemplateStyles {
 			return self::$skin_ids[ $post_id ];
 		}
 
-		$document = Plugin::instance()->documents->get_doc_for_frontend( $post_id );
-		$ids      = [];
+		$ids = [];
 
-		Plugin::instance()->db->iterate_data( $document ? $document->get_elements_data() : [], function ( $element ) use ( &$ids ) {
-			$settings = $element['settings'] ?? [];
-			if ( 'widget' !== ( $element['elType'] ?? '' ) || 'metabox-group' !== ( $element['widgetType'] ?? '' ) ) {
+		Utils::traverse_post_elements( (string) $post_id, function ( $element ) use ( &$ids ) {
+			if ( 'metabox-group' !== ( $element['widgetType'] ?? '' ) ) {
 				return;
 			}
 
-			foreach ( (array) ($settings['mb_skin_template'] ?? []) as $id ) {
-				$new   = (int) apply_filters( 'wpml_object_id', $id, 'elementor_library', true );
-				$ids[] = $new > 0 ? $new : (int) $id;
+			foreach ( (array) ( $element['settings']['mb_skin_template'] ?? [] ) as $id ) {
+				$ids[] = (int) apply_filters( 'wpml_object_id', $id, 'elementor_library', true );
 			}
 		} );
 
