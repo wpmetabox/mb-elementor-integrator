@@ -2,6 +2,7 @@
 namespace MBEI;
 
 use Elementor\Core\DynamicTags\Manager;
+use Elementor\Modules\AtomicWidgets\Utils\Utils;
 
 class Loader {
 
@@ -61,6 +62,10 @@ class Loader {
 
 	public function modules() {
 		new GroupField();
+
+		if ( class_exists( Utils::class ) ) {
+			new SkinTemplateStyles();
+		}
 	}
 
 	public function register_conditions( $conditions_manager ) {
