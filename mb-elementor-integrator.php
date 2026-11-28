@@ -1,12 +1,14 @@
 <?php
 /**
- * Plugin Name: MB Elementor Integration
- * Plugin URI:  https://metabox.io/plugins/mb-elementor-integrator/
- * Description: Integrates Meta Box and Elementor Page Builder.
- * Version:     2.2.8
- * Author:      MetaBox.io
- * Author URI:  https://metabox.io
- * License:     GPL2+
+ * Plugin Name:       MB Elementor Integration
+ * Plugin URI:        https://metabox.io/plugins/mb-elementor-integrator/
+ * Description:       Integrates Meta Box and Elementor Page Builder.
+ * Version:           2.2.9
+ * Requires at least: 6.7
+ * Requires PHP:      7.4
+ * Author:            MetaBox.io
+ * Author URI:        https://metabox.io
+ * License:           GPL2+
  *
  * Copyright (C) 2010-2025 Tran Ngoc Tuan Anh. All rights reserved.
  *

@@ -1,3 +1,7 @@
+### 2.2.9 - 2026-11-28
+
+- Fix missing Elementor V4 styles in Meta Box Group skins (#52)
+
 ### 2.2.8 - 2026-10-19
 
 - Fix image metas have special characters
